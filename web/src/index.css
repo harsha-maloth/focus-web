@@ -880,10 +880,23 @@ body,
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: 1.5rem;
   background: var(--bg);
   color: var(--ink);
   text-align: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  /* Keep content clear of notches and system bars; the background still fills them. */
+  padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+}
+html,
+body {
+  background: var(--bg);
+}
+body.zen-open {
+  overflow: hidden;
 }
 .zen-ring {
   width: min(70vw, 70vh, 28rem);

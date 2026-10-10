@@ -21,6 +21,11 @@ import {
 import { useNow } from './useNow'
 import { useWakeLock } from './useWakeLock'
 
+function enterFullscreen() {
+  const request = document.documentElement.requestFullscreen?.()
+  if (request) request.catch(() => {})
+}
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const messageOf = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback)
 
@@ -113,6 +118,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
   const [breakEnd, setBreakEnd] = useState<number | null>(null)
   const [breakOver, setBreakOver] = useState(false)
   const [zen, setZen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const completing = useRef<string | null>(null)
 
   const tags = tagsQuery.data ?? []
@@ -192,17 +198,18 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breakEnd, breakRemaining])
 
-  // Zen mode: full screen where the browser allows it. Escape leaves full screen, which leaves zen.
+  // Zen mode: the page goes full screen where the browser allows it. If the browser leaves full
+  // screen (Escape), the zen view still covers the whole window and offers a button to go back.
   useEffect(() => {
     if (!zenOn) return
-    const request = document.documentElement.requestFullscreen?.()
-    if (request) request.catch(() => {})
-    const onChange = () => {
-      if (!document.fullscreenElement) setZen(false)
-    }
+    enterFullscreen()
+    document.body.classList.add('zen-open')
+    const onChange = () => setIsFullscreen(document.fullscreenElement !== null)
+    onChange()
     document.addEventListener('fullscreenchange', onChange)
     return () => {
       document.removeEventListener('fullscreenchange', onChange)
+      document.body.classList.remove('zen-open')
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
     }
   }, [zenOn])
@@ -436,9 +443,16 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
                     : `${session.distraction_count} ${session.distraction_count === 1 ? 'distraction' : 'distractions'} so far.`}
                   {ambient !== 'off' ? ` Ambient: ${ambient} noise.` : ''}
                 </p>
-                <button type="button" className="btn btn-outline" onClick={() => setZen(false)}>
-                  Exit zen
-                </button>
+                <div className="actions">
+                  {!isFullscreen && document.documentElement.requestFullscreen ? (
+                    <button type="button" className="btn btn-outline" onClick={enterFullscreen}>
+                      Full screen
+                    </button>
+                  ) : null}
+                  <button type="button" className="btn btn-outline" onClick={() => setZen(false)}>
+                    Exit zen
+                  </button>
+                </div>
               </div>,
               document.body,
             )
