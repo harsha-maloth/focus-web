@@ -1,8 +1,11 @@
 import { formatMinutes } from '../../lib/time'
+import { TagChip } from '../tags/TagChip'
+import { useTags } from '../tags/queries'
 import { useRecentSessions } from './queries'
 
 export function SessionList({ userId, timezone }: { userId: string; timezone: string }) {
   const recent = useRecentSessions(userId)
+  const tags = useTags(userId)
 
   if (recent.isPending) return <p className="muted" aria-busy="true">Loading recent sessions…</p>
   if (recent.isError) return <p className="form-error" role="alert">Couldn't load recent sessions.</p>
@@ -14,23 +17,30 @@ export function SessionList({ userId, timezone }: { userId: string; timezone: st
   } catch {
     format = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
   }
+  const tagById = new Map((tags.data ?? []).map((t) => [t.id, t]))
 
   return (
     <section className="stack" aria-labelledby="recent-heading">
       <h2 id="recent-heading">Recent sessions</h2>
       <ul className="session-list">
-        {recent.data.map((s) => (
-          <li key={s.id}>
-            <span className="session-when">{format.format(new Date(s.started_at))}</span>
-            <span className="session-length">{formatMinutes(s.focused_seconds)}</span>
-            <span className={s.status === 'completed' ? 'session-status' : 'session-status session-status--early'}>
-              {s.status === 'completed' ? 'Completed' : 'Ended early'}
-            </span>
-            <span className="muted">
-              {s.distraction_count} {s.distraction_count === 1 ? 'distraction' : 'distractions'}
-            </span>
-          </li>
-        ))}
+        {recent.data.map((s) => {
+          const tag = s.tag_id ? tagById.get(s.tag_id) : undefined
+          return (
+            <li key={s.id}>
+              <div className="session-main">
+                <span className="session-when">{format.format(new Date(s.started_at))}</span>
+                {tag ? <TagChip tag={tag} /> : null}
+              </div>
+              <span className="session-length">{formatMinutes(s.focused_seconds)}</span>
+              <span className={s.status === 'completed' ? 'session-status' : 'session-status session-status--early'}>
+                {s.status === 'completed' ? 'Completed' : 'Ended early'}
+              </span>
+              <span className="muted">
+                {s.distraction_count} {s.distraction_count === 1 ? 'distraction' : 'distractions'}
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

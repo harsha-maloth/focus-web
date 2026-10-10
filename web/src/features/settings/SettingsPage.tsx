@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { TagsSection } from '../tags/TagsSection'
 import {
   deleteMyAccount,
   useProfile,
@@ -36,6 +37,7 @@ export function SettingsPage() {
         profile={profile.data}
         settings={settings.data}
       />
+      <TagsSection userId={userId} />
       <DeleteAccount />
     </div>
   )

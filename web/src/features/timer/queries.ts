@@ -56,9 +56,12 @@ export function useServerOffset() {
   })
 }
 
-export async function rpcStartSession(plannedSeconds: number): Promise<FocusSession> {
+export async function rpcStartSession(
+  plannedSeconds: number,
+  tagId: string | null,
+): Promise<FocusSession> {
   const { data, error } = await supabase.rpc('start_session', {
-    p_tag_id: null,
+    p_tag_id: tagId,
     p_planned_seconds: plannedSeconds,
   })
   if (error) throw new Error(error.message)

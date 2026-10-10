@@ -674,3 +674,90 @@ body,
     width: min(55vh, 14rem);
   }
 }
+
+/* ---------------------------------------------------------------- tags */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.65rem 0.15rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: var(--step--1);
+  font-weight: 600;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.tag-dot {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+.color-input {
+  flex: none;
+  width: 3rem;
+  min-height: 2.5rem;
+  padding: 0.15rem;
+  cursor: pointer;
+}
+.tag-add {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+.tag-add .field {
+  flex: 1;
+}
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tag-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.tag-view {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.tag-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+.tag-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tag-edit input[type='text'] {
+  flex: 1 1 10rem;
+  width: auto;
+}
+
+.timer-tag {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 8rem;
+  max-width: 14rem;
+  min-width: 0;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+
+.session-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+}

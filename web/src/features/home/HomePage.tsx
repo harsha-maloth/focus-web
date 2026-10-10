@@ -11,6 +11,7 @@ export function HomePage() {
 
   const name = profile.data?.display_name?.trim()
   const focusMinutes = settings.data?.default_minutes ?? 25
+  const breakMinutes = settings.data?.break_minutes ?? 5
 
   if (settings.isPending) {
     return <p className="muted" aria-busy="true">Loading…</p>
@@ -19,7 +20,12 @@ export function HomePage() {
   return (
     <div className="page">
       <h1>{name ? `Welcome, ${name}` : 'Welcome'}</h1>
-      <TimerPanel key={focusMinutes} userId={userId} defaultMinutes={focusMinutes} />
+      <TimerPanel
+        key={`${focusMinutes}-${breakMinutes}`}
+        userId={userId}
+        defaultMinutes={focusMinutes}
+        breakMinutes={breakMinutes}
+      />
       <SessionList userId={userId} timezone={profile.data?.timezone ?? 'UTC'} />
     </div>
   )

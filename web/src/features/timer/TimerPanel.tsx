@@ -2,7 +2,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Ring } from '../../components/Ring'
 import { formatClock, formatMinutes } from '../../lib/time'
-import type { FocusSession } from '../../lib/types'
+import type { FocusSession, Tag } from '../../lib/types'
+import { TagChip } from '../tags/TagChip'
+import { useTags } from '../tags/queries'
 import {
   rpcEndSession,
   rpcLogEvent,
@@ -18,24 +20,100 @@ const STALE_GRACE_MS = 300_000
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const messageOf = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback)
 
-export function TimerPanel({ userId, defaultMinutes }: { userId: string; defaultMinutes: number }) {
+function loadTag(key: string): string {
+  try {
+    return window.localStorage.getItem(key) ?? ''
+  } catch {
+    return ''
+  }
+}
+function saveTag(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    // Storage can be unavailable (private mode); the choice just isn't remembered.
+  }
+}
+
+type StartControlsProps = {
+  minutes: string
+  onMinutes: (value: string) => void
+  valid: boolean
+  tags: Tag[]
+  tagId: string
+  onTag: (value: string) => void
+  busy: boolean
+  onStart: () => void
+  label: string
+}
+
+function StartControls(p: StartControlsProps) {
+  return (
+    <div className="actions">
+      <label className="timer-minutes">
+        <span>Minutes</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={240}
+          value={p.minutes}
+          onChange={(e) => p.onMinutes(e.target.value)}
+          aria-invalid={!p.valid}
+        />
+      </label>
+      {p.tags.length > 0 ? (
+        <label className="timer-tag">
+          <span>Tag</span>
+          <select value={p.tagId} onChange={(e) => p.onTag(e.target.value)}>
+            <option value="">No tag</option>
+            {p.tags.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      <button type="button" className="btn btn-primary" onClick={p.onStart} disabled={p.busy || !p.valid}>
+        {p.label}
+      </button>
+    </div>
+  )
+}
+
+type TimerPanelProps = { userId: string; defaultMinutes: number; breakMinutes: number }
+
+export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelProps) {
   const queryClient = useQueryClient()
   const running = useRunningSession(userId)
   const offset = useServerOffset()
+  const tagsQuery = useTags(userId)
   const session = running.data ?? null
 
+  const tagKey = `focus:lastTag:${userId}`
   const [minutes, setMinutes] = useState(String(defaultMinutes))
+  const [tagChoice, setTagChoice] = useState(() => loadTag(tagKey))
   const [result, setResult] = useState<FocusSession | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirmingGiveUp, setConfirmingGiveUp] = useState(false)
+  const [breakEnd, setBreakEnd] = useState<number | null>(null)
+  const [breakOver, setBreakOver] = useState(false)
   const completing = useRef<string | null>(null)
 
-  const now = useNow(offset.data ?? 0, session !== null)
+  const tags = tagsQuery.data ?? []
+  const tagById = new Map(tags.map((t) => [t.id, t]))
+  // A remembered tag may have been deleted since; fall back to no tag.
+  const tagId = tagById.has(tagChoice) ? tagChoice : ''
+
+  const now = useNow(offset.data ?? 0, session !== null || breakEnd !== null)
   const startMs = session ? new Date(session.started_at).getTime() : 0
   const remaining = session ? Math.ceil((startMs + session.planned_seconds * 1000 - now) / 1000) : 0
   const due = session !== null && remaining <= 0
   const stale = session !== null && now > startMs + session.planned_seconds * 1000 + STALE_GRACE_MS
+  const breakRemaining = breakEnd !== null ? Math.ceil((breakEnd - now) / 1000) : 0
+  const onBreak = breakEnd !== null && breakRemaining > 0
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ['running-session', userId] })
@@ -74,6 +152,14 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id, due, stale])
 
+  // Breaks are not recorded anywhere: when one runs out, just go back to ready.
+  useEffect(() => {
+    if (breakEnd !== null && breakRemaining <= 0) {
+      setBreakEnd(null)
+      setBreakOver(true)
+    }
+  }, [breakEnd, breakRemaining])
+
   // Leaving the tab is a distraction. Log it once on the way out and once on the way back.
   useEffect(() => {
     if (!session) return
@@ -98,24 +184,34 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
 
   // Show the countdown in the browser tab.
   useEffect(() => {
-    if (!session || due) return
-    document.title = `${formatClock(remaining)} · Focus`
+    let title: string | null = null
+    if (session && !due) title = `${formatClock(remaining)} · Focus`
+    else if (onBreak) title = `${formatClock(breakRemaining)} · Break`
+    if (!title) return
+    document.title = title
     return () => {
       document.title = 'Focus'
     }
-  }, [session, due, remaining])
+  }, [session, due, remaining, onBreak, breakRemaining])
 
   const minutesNumber = Number(minutes)
   const minutesValid = Number.isInteger(minutesNumber) && minutesNumber >= 1 && minutesNumber <= 240
+
+  function chooseTag(value: string) {
+    setTagChoice(value)
+    saveTag(tagKey, value)
+  }
 
   async function onStart() {
     if (!minutesValid) return
     setBusy(true)
     setError(null)
     setResult(null)
+    setBreakEnd(null)
+    setBreakOver(false)
     completing.current = null
     try {
-      await rpcStartSession(minutesNumber * 60)
+      await rpcStartSession(minutesNumber * 60, tagId || null)
     } catch (err) {
       setError(messageOf(err, 'Could not start the session.'))
     }
@@ -138,6 +234,25 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
     setBusy(false)
   }
 
+  function onStartBreak() {
+    setBreakOver(false)
+    setBreakEnd(Date.now() + (offset.data ?? 0) + breakMinutes * 60_000)
+  }
+
+  const controls = (label: string) => (
+    <StartControls
+      minutes={minutes}
+      onMinutes={setMinutes}
+      valid={minutesValid}
+      tags={tags}
+      tagId={tagId}
+      onTag={chooseTag}
+      busy={busy}
+      onStart={onStart}
+      label={label}
+    />
+  )
+
   if (running.isPending || offset.isPending) {
     return <p className="muted" aria-busy="true">Loading your timer…</p>
   }
@@ -158,23 +273,7 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
           <p className="muted">
             It ran past its planned end with no sign you were there, so it won't count toward your totals.
           </p>
-          <div className="actions">
-            <label className="timer-minutes">
-              <span>Minutes</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={240}
-                value={minutes}
-                onChange={(e) => setMinutes(e.target.value)}
-                aria-invalid={!minutesValid}
-              />
-            </label>
-            <button type="button" className="btn btn-primary" onClick={onStart} disabled={busy || !minutesValid}>
-              Start a new session
-            </button>
-          </div>
+          {controls('Start a new session')}
           {error ? <p className="form-error" role="alert">{error}</p> : null}
         </div>
         <Ring className="home-ring" progress={0}>
@@ -186,10 +285,12 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
   }
 
   if (session) {
+    const sessionTag = session.tag_id ? tagById.get(session.tag_id) : undefined
     return (
       <div className="home">
         <div className="home-copy">
           <h2>{due ? 'Wrapping up…' : 'Focus'}</h2>
+          {sessionTag ? <TagChip tag={sessionTag} /> : null}
           <p className="muted">
             {session.distraction_count === 0
               ? 'No distractions so far. Leaving this tab counts as one.'
@@ -237,7 +338,28 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
     )
   }
 
+  if (onBreak) {
+    return (
+      <div className="home">
+        <div className="home-copy">
+          <h2>Break</h2>
+          <p className="muted">Step away from the screen. Breaks aren't counted or saved.</p>
+          <div className="actions">
+            <button type="button" className="btn btn-outline" onClick={() => setBreakEnd(null)}>
+              Skip break
+            </button>
+          </div>
+        </div>
+        <Ring className="home-ring" progress={Math.max(0, breakRemaining) / (breakMinutes * 60)}>
+          <span className="ring-time">{formatClock(breakRemaining)}</span>
+          <span className="ring-caption">break</span>
+        </Ring>
+      </div>
+    )
+  }
+
   const idleMinutes = minutesValid ? minutesNumber : defaultMinutes
+  const resultTag = result?.tag_id ? tagById.get(result.tag_id) : undefined
 
   return (
     <div className="home">
@@ -245,6 +367,7 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
         {result ? (
           <>
             <h2>{result.status === 'completed' ? 'Session complete' : 'Session ended early'}</h2>
+            {resultTag ? <TagChip tag={resultTag} /> : null}
             <p className="muted">
               {formatMinutes(result.focused_seconds)} focused
               {result.distraction_count > 0
@@ -252,38 +375,37 @@ export function TimerPanel({ userId, defaultMinutes }: { userId: string; default
                 : ', no distractions'}
               . Timed by the server.
             </p>
+            {result.status === 'completed' ? (
+              <div className="actions">
+                <button type="button" className="btn btn-outline" onClick={onStartBreak}>
+                  Start {breakMinutes} min break
+                </button>
+              </div>
+            ) : null}
           </>
         ) : (
           <>
-            <h2>Ready when you are</h2>
-            <p className="muted">Sessions are timed on the server, so the totals you see are the totals you earned.</p>
+            <h2>{breakOver ? 'Break over' : 'Ready when you are'}</h2>
+            <p className="muted">
+              {breakOver
+                ? 'Ready for the next session?'
+                : 'Sessions are timed on the server, so the totals you see are the totals you earned.'}
+            </p>
           </>
         )}
-        <div className="actions">
-          <label className="timer-minutes">
-            <span>Minutes</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={240}
-              value={minutes}
-              onChange={(e) => setMinutes(e.target.value)}
-              aria-invalid={!minutesValid}
-            />
-          </label>
-          <button type="button" className="btn btn-primary" onClick={onStart} disabled={busy || !minutesValid}>
-            {result ? 'Start another' : 'Start focus'}
-          </button>
-        </div>
+        {result && breakOver ? <p className="muted">Break over. Ready for the next session?</p> : null}
+        {controls(result || breakOver ? 'Start another' : 'Start focus')}
         {!minutesValid ? (
           <p className="form-error" role="alert">Choose 1–240 minutes.</p>
+        ) : null}
+        {tagsQuery.isSuccess && tags.length === 0 ? (
+          <p className="hint">Add tags in Settings to group your sessions.</p>
         ) : null}
         {error ? <p className="form-error" role="alert">{error}</p> : null}
       </div>
       <Ring className="home-ring" progress={1}>
         <span className="ring-time">{formatClock(idleMinutes * 60)}</span>
-        <span className="ring-caption">{result ? 'done' : 'ready'}</span>
+        <span className="ring-caption">{result || breakOver ? 'done' : 'ready'}</span>
       </Ring>
     </div>
   )

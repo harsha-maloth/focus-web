@@ -6,7 +6,7 @@ A web page can't see or block other apps. This is a timer and tracker, not a blo
 
 ## Status
 
-Phases 0 to 2 are written: scaffold, deploy workflow, database migrations, email-link and Google sign-in, protected routes, profile and timer-default settings, and the focus timer (server-timed sessions, distraction logging on tab leave, recent sessions list). Tags, stats and the community come later.
+Phases 0 to 2 are written: scaffold, deploy workflow, database migrations, email-link and Google sign-in, protected routes, profile and timer-default settings, and the focus timer (server-timed sessions, distraction logging on tab leave, recent sessions list, tags, a client-side break timer). Stats and the community come later.
 
 ## Layout
 
