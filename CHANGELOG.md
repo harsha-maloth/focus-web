@@ -2,6 +2,14 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 9: app limits (written, not compiled)
+- New `limits/` package: `LimitMath` (pure, tested), `BlockerService` (accessibility service: window-change events only, 30 s re-check, never blocks Focus or System UI), `BlockActivity` (full-screen "Time's up", Back and button go Home), `InstalledApps`, `AccessibilityStatus`.
+- Room version 2 with `Migration(1, 2)` adding `app_limit` (pkg, label, limitMs); `AppLimitDao`. Usage history is kept.
+- UI: bottom tab bar (Usage, Limits). New `LimitsScreen`: setup card for the two permissions with the Android 13 restricted-settings steps, list of limits with used and blocked state, Add (app picker, then 15 to 120 min) and Remove. `HomeScreen` list no longer adds the nav-bar padding (the tab bar does).
+- Manifest: `BlockActivity` (not in Recents), `BlockerService` with `BIND_ACCESSIBILITY_SERVICE`, `res/xml/blocker_service.xml`, service description string. Still no INTERNET and no overlay permission.
+- Tests: new `LimitMathTest` (5 cases). Decision D29. Docs: android README ("Turning blocking on"), roadmap, AGENTS (next decision D30).
+- Not run: nothing compiled or tried on a phone (no SDK or Google Maven in the workspace). The accessibility flow can only be proven on a device.
+
 ## Session 8: remove web, Android-first (written, not compiled)
 - **Removed** `web/` (React app, PWA, tests, fonts) and `.github/workflows/deploy.yml`. Decision D27. Git history keeps them. `docs-check.yml` now watches `android/`, `supabase/` and workflows instead of `web/`.
 - **Kept** `supabase/` untouched (migrations 0001 to 0004, health check, pgTAP). Marked web docs as archived (`web-plan.md`, `architecture.md`, `code-review.md`).

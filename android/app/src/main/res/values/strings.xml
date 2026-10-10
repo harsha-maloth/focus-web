@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Focus</string>
+    <string name="blocker_description">Focus checks which app is in front. When an app you set a daily limit for reaches that limit, Focus shows a \"time is up\" screen over it. Focus does not read what is on the screen and sends nothing off the phone.</string>
 </resources>

@@ -6,8 +6,9 @@ Clean-room: written independently, nothing taken from any reference app (D2).
 ## What it does so far (version 0.1.0)
 - Asks for **Usage access** (Settings, Special access), then lists screen time per app.
 - Shows the last 7 days as bars; tap a day to see its apps. Each day is saved on the phone in a Room database (D28), so history outlives the system's short event log.
+- **Limits tab:** pick an app and a daily limit (15 to 120 min). An accessibility service watches which app comes to the front; once today's use reaches the limit, a full-screen "Time's up" page opens over it (Back or "Go home" returns to the launcher). It resets at midnight.
 - Has no INTERNET permission: nothing leaves the phone.
-- Not built yet: app limits, blocking, overlay, focus sessions, Supabase sync (see `docs/roadmap.md`).
+- Not built yet: focus sessions, allowed-apps list, schedules, reboot recovery checks, Supabase sync (see `docs/roadmap.md`).
 - Nothing here has been compiled yet (including the Room and KSP setup); expect small fixes from the first CI run.
 
 ## Build without Android Studio
@@ -18,6 +19,14 @@ Clean-room: written independently, nothing taken from any reference app (D2).
 5. Open Focus, tap "Open settings" and turn on usage access for Focus.
 
 If the build fails, open the failed step in the run and send the red lines. Nothing in this folder has been compiled yet.
+
+## Turning blocking on (once)
+1. Limits tab > "Open usage access" and allow Focus (same switch as the Usage tab).
+2. Android 13 and newer greys out Accessibility for sideloaded apps: Settings > Apps > Focus > three dots > **Allow restricted settings**.
+3. Limits tab > "Open accessibility" > Focus > turn on. Android shows a warning; Focus reads only which app is in front, no screen content (`res/xml/blocker_service.xml`).
+4. Add a limit. Test with a short one (15 min on an app you have already used for longer): opening it should show "Time's up".
+
+Known limits: it can only react after the app opens (a flash of the app is possible); some phones kill the service to save battery (reliability work is step 4); an app open across midnight loses its pre-midnight time on the new day.
 
 ## Keep updates installable (recommended, one time)
 Android only installs an update over an app signed with the same key. Without a stored key, each cloud build gets a new throwaway key, so you must uninstall before installing the next build.
@@ -37,8 +46,9 @@ android/
   app/src/main/java/app/focus/harsha/
     MainActivity.kt
     ui/       Theme, Format, HomeScreen
+    limits/   LimitMath (pure, tested), BlockerService (accessibility), BlockActivity, InstalledApps, AccessibilityStatus
     usage/    UsageAggregator, WeekMath (pure, tested), UsageRepository (system calls), UsageSync
-    data/     FocusDb (Room: daily_usage)
+    data/     FocusDb (Room: daily_usage, app_limit)
   app/src/test/...                JUnit tests for the pure parts
 ```
 

@@ -271,3 +271,11 @@ Not verified: nothing compiled or run. Google Maven was blocked in the workspace
 Open items: (1) push and read the first CI result, fix errors; (2) signing-key secret; (3) check numbers against Digital Wellbeing on the phone; (4) switch off GitHub Pages and review Actions variables (user, in `ops-log.md`); (5) step 2, app limits with the accessibility service.
 Context block addition: the repo is Android-first. `web/` is gone (history only). `supabase/` is kept for later sync, applied but unused by the app. Android has Room (`daily_usage`), a 7-day view, and has never been built.
 
+
+### Session 9: 2026-10-10
+Goal: Android step 2, app limits with blocking.
+Done: limits package, accessibility service, block activity, Room v2 migration, Limits tab, tests, D29 (see `CHANGELOG.md`, Session 9).
+Not verified: nothing compiled or run; the first CI run (also for Session 8 code) has not been read yet.
+Open items: (1) push, read CI, fix compile errors; (2) on the phone: usage access, allow restricted settings, enable accessibility, set a short limit and see the block; (3) edit-a-limit, warning before the limit, step 3 focus timer.
+Context block addition: Android has a Usage tab (7-day view, Room `daily_usage`) and a Limits tab (`app_limit`, accessibility `BlockerService`, `BlockActivity`). Never built.
+
