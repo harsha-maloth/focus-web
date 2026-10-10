@@ -2,6 +2,12 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 11: use the system's own daily totals (written, not compiled)
+- User asked to use the Digital Wellbeing data. Android has no public API to read that app's data. The closest source is the system's per-app daily totals (`UsageStatsManager.queryUsageStats(INTERVAL_DAILY)`), which is what screen-time screens draw on, so `UsageRepository.day` now uses it. The event-log maths (`foregroundMs`, Session 10) stays as a fallback when the system returns nothing.
+- `UsageAggregator.fromBuckets` (pure): keeps the bucket that starts at the day's midnight, sums per app, caps each app at the window. 2 new tests. Not run.
+- Room 3 to 4 clears `daily_usage` again so days computed the old way are replaced. Limits are kept.
+- Expect small differences from the Digital Wellbeing app itself; compare on the phone.
+
 ## Session 10: fix wildly wrong usage totals (written, not compiled)
 - **Bug (seen on the phone, 2026-10-10):** the screen showed 48 h 57 min for one day and 86 h on another, and WhatsApp 15 h in under 12 h of day. Cause: `UsageAggregator` paired resume and pause per activity, so any activity whose pause event was missing counted until the end of the day, and several of them stacked.
 - **Fix:** one app in front at a time. A resume closes the previous app; a pause closes only the current app; screen off, lock screen and shutdown close whatever is open. Totals can no longer exceed the window.

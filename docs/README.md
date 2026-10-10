@@ -13,7 +13,7 @@ Research, decisions, plans and logs for the whole project. Code is in `../androi
 | `roadmap.md` | Current state of both tracks, next actions, open questions |
 | `web-plan.md` | Archived web plan; section 6 and 13 still describe the Supabase schema |
 | `code-review.md` | Archived review of the web code and database |
-| `decisions.md` | Decision records D1 to D30: what was chosen and why |
+| `decisions.md` | Decision records D1 to D31: what was chosen and why |
 | `ai-log.md` | Chronological log of AI-assisted sessions, with a context block to paste into a new session |
 | `../CHANGELOG.md` | Dated changes to the repo |
 | `architecture.md` | Web architecture as built, and the planned Android architecture |

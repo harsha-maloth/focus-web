@@ -109,3 +109,6 @@ Limits are enforced by `BlockerService`, an accessibility service that listens o
 ## D30: Usage maths uses one foreground app at a time (2026-10-10)
 Replaces the per-activity pairing in `UsageAggregator`. The phone showed 48 h in a day because activities with a missing pause event ran to the end of the window and stacked. Now a resume closes the previous app, a pause closes only the current app, and screen off, lock screen and shutdown close everything. Cost: split-screen time goes to the last app resumed. Room moved to version 3 and clears `daily_usage` so the bad history does not survive the "only replace with a larger value" rule.
 
+## D31: Usage comes from the system's daily totals, events as fallback (2026-10-10)
+Supersedes the source choice in D30 (the one-app-at-a-time event maths stays as the fallback). Digital Wellbeing's own data is not readable by apps, so `queryUsageStats(INTERVAL_DAILY)` is used: the system does the pairing, the app keeps only the bucket starting at local midnight and caps each app at the window. Room 4 clears stored days. Limits use the same numbers.
+

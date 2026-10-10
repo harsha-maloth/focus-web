@@ -107,4 +107,26 @@ class UsageAggregatorTest {
         assertEquals(10_000L, r["a"])
         assertEquals(20_000L, r["b"])
     }
+
+    @Test
+    fun bucketsKeepOnlyTheDayStartingAtMidnight() {
+        val day = 86_400_000L
+        val r = UsageAggregator.fromBuckets(
+            listOf(
+                RawBucket("a", 0, 5_000),          // yesterday's bucket: dropped
+                RawBucket("a", day, 7_000),        // this day: kept
+                RawBucket("b", day + 10, 3_000),   // starts a hair late: kept
+            ),
+            startMs = day,
+            endMs = 2 * day,
+        )
+        assertEquals(7_000L, r["a"])
+        assertEquals(3_000L, r["b"])
+    }
+
+    @Test
+    fun bucketTotalIsCappedAtTheWindow() {
+        val r = UsageAggregator.fromBuckets(listOf(RawBucket("a", 0, 999_999_999)), 0, 10_000)
+        assertEquals(10_000L, r["a"])
+    }
 }

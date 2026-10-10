@@ -32,8 +32,9 @@ object UsageRepository {
 
     /**
      * Foreground time per app on one local day (midnight to midnight, or to now for today).
-     * Needs usage access. An app already open at midnight loses the part before midnight on the
-     * new day, because the system only reports the resume event on the earlier day.
+     * Needs usage access. Uses the system's daily totals; the event log is only a fallback.
+     * Android has no public way to read the Digital Wellbeing app's own data, so this is the
+     * closest source. Numbers can differ a little from that app.
      */
     fun day(context: Context, date: LocalDate): UsageSummary {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -42,16 +43,25 @@ object UsageRepository {
         val end = minOf(date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(), System.currentTimeMillis())
         if (end <= start) return UsageSummary(emptyList(), 0L)
 
-        val raw = ArrayList<RawEvent>()
-        val events = usm.queryEvents(start, end)
-        val event = UsageEvents.Event()
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event)
-            raw.add(RawEvent(event.packageName, event.className ?: "", event.eventType, event.timeStamp))
+        // Preferred: the system's own daily totals (what the phone's screen time screens use).
+        val buckets = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
+            .map { RawBucket(it.packageName, it.firstTimeStamp, it.totalTimeInForeground) }
+        var totals = UsageAggregator.fromBuckets(buckets, start, end)
+
+        // Fallback for phones that return no daily totals: work it out from the event log.
+        if (totals.isEmpty()) {
+            val raw = ArrayList<RawEvent>()
+            val events = usm.queryEvents(start, end)
+            val event = UsageEvents.Event()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                raw.add(RawEvent(event.packageName, event.className ?: "", event.eventType, event.timeStamp))
+            }
+            totals = UsageAggregator.foregroundMs(raw, end)
         }
 
         val pm = context.packageManager
-        val apps = UsageAggregator.foregroundMs(raw, end)
+        val apps = totals
             .filter { it.value >= MIN_MS }
             .mapNotNull { (pkg, ms) ->
                 // Only apps with a launcher icon: hides system services nobody opens on purpose.

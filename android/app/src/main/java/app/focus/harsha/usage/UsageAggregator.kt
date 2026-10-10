@@ -3,6 +3,9 @@ package app.focus.harsha.usage
 /** One event from the system usage log, reduced to what the maths needs. */
 data class RawEvent(val pkg: String, val cls: String, val type: Int, val timeMs: Long)
 
+/** One daily bucket from the system's own per-app totals (UsageStats). */
+data class RawBucket(val pkg: String, val firstMs: Long, val totalMs: Long)
+
 /**
  * Adds up how long each app was in the foreground, from the system's event log.
  * Pure Kotlin so it can be unit-tested without a phone.
@@ -55,6 +58,24 @@ object UsageAggregator {
             }
         }
         close(endMs)
+        return totals
+    }
+
+    /**
+     * Per-app foreground time for one day from the system's own daily totals, the same source the
+     * phone's Digital Wellbeing style screens draw on. Keeps only the bucket that starts at this
+     * day's midnight (a little slack for clock or zone changes), sums buckets of the same app, and
+     * caps each app at the length of the window.
+     */
+    fun fromBuckets(buckets: List<RawBucket>, startMs: Long, endMs: Long): Map<String, Long> {
+        val slack = 60_000L
+        val window = (endMs - startMs).coerceAtLeast(0L)
+        val totals = HashMap<String, Long>()
+        for (b in buckets) {
+            if (b.firstMs < startMs - slack || b.firstMs >= endMs) continue
+            if (b.totalMs <= 0L) continue
+            totals[b.pkg] = minOf(window, (totals[b.pkg] ?: 0L) + b.totalMs)
+        }
         return totals
     }
 }
