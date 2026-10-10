@@ -26,7 +26,7 @@ export function DailyChart({ data }: { data: Day[] }) {
       aria-label={`Focus time per day for the last ${data.length} days, ${formatDuration(total)} in total`}
     >
       <text x={PAD_X} y={10} className="chart-label">
-        {formatDuration(max)}
+        {`scale: ${formatDuration(max)}`}
       </text>
       <line x1={PAD_X} x2={W - PAD_X} y1={TOP} y2={TOP} className="chart-grid" />
       <line x1={PAD_X} x2={W - PAD_X} y1={TOP + plotH} y2={TOP + plotH} className="chart-grid" />

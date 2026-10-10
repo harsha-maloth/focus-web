@@ -31,6 +31,7 @@ export function StatsPage() {
   }
 
   const tagTotal = s.tags.reduce((sum, t) => sum + t.seconds, 0)
+  const thirtyDayTotal = s.daily.reduce((sum, d) => sum + d.seconds, 0)
 
   return (
     <div className="page">
@@ -67,7 +68,7 @@ export function StatsPage() {
         <h2 id="daily-heading">Last 30 days</h2>
         <DailyChart data={s.daily} />
         <p className="hint">
-          Days are counted in your time zone ({s.timezone}), by when a session started.{' '}
+          {formatDuration(thirtyDayTotal)} in the last 30 days. Days are counted in your time zone ({s.timezone}), by when a session started.{' '}
           <Link to="/settings">Change it in Settings</Link>.
         </p>
       </section>
