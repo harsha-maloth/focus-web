@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { SkeletonCards } from '../../components/Skeleton'
 import { compareWeeks, milestoneLabel } from '../../lib/stats'
 import { formatDuration, shortDate } from '../../lib/time'
 import { useAuth } from '../auth/AuthProvider'
@@ -10,7 +11,7 @@ export function StatsPage() {
   const userId = user!.id
   const stats = useStats(userId)
 
-  if (stats.isPending) return <p className="muted" aria-busy="true">Loading your stats…</p>
+  if (stats.isPending) return <SkeletonCards label="Loading your stats" />
   if (stats.isError) {
     return (
       <p className="form-error" role="alert">
@@ -24,7 +25,7 @@ export function StatsPage() {
   if (s.total_sessions === 0) {
     return (
       <div className="page">
-        <h1>Stats</h1>
+        <h1 className="page-title">Stats</h1>
         <p className="muted">Finish a session and your totals, streaks and charts will appear here.</p>
       </div>
     )
@@ -35,7 +36,7 @@ export function StatsPage() {
 
   return (
     <div className="page">
-      <h1>Stats</h1>
+      <h1 className="page-title">Stats</h1>
 
       <section className="stat-grid" aria-label="Summary">
         <div className="stat-card">
@@ -64,7 +65,7 @@ export function StatsPage() {
         </div>
       </section>
 
-      <section className="stack" aria-labelledby="daily-heading">
+      <section className="stack panel" aria-labelledby="daily-heading">
         <h2 id="daily-heading">Last 30 days</h2>
         <DailyChart data={s.daily} />
         <p className="hint">
@@ -73,7 +74,7 @@ export function StatsPage() {
         </p>
       </section>
 
-      <section className="stack" aria-labelledby="tags-stats-heading">
+      <section className="stack panel" aria-labelledby="tags-stats-heading">
         <h2 id="tags-stats-heading">By tag</h2>
         {s.tags.length === 0 || tagTotal === 0 ? (
           <p className="muted">No sessions in the last 30 days.</p>
@@ -109,7 +110,7 @@ export function StatsPage() {
         )}
       </section>
 
-      <section className="stack" aria-labelledby="milestones-heading">
+      <section className="stack panel" aria-labelledby="milestones-heading">
         <h2 id="milestones-heading">Milestones</h2>
         {s.milestones.length === 0 ? (
           <p className="muted">Your first milestone is one completed session away.</p>

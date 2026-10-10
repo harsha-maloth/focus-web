@@ -14,6 +14,7 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 | 3 | Stats: totals, streaks, milestones, 30-day chart, tag breakdown | Done: checked in the browser 2026-10-10 (chart scale label is confusing, see code-review) |
 | Hardening | 0002 to 0004: stale sessions, heartbeat presence, time zone list | Applied and verified by the health check (2026-10-10). pgTAP tests not yet run |
 | 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Deployed 2026-10-10, CI green, user reports it works (checks not itemised) |
+| UI | App-style look in Focus colours (D23, D24) | All planned parts written 2026-10-10 (tab bar, hero titles, login, panels, tag sheet, snackbar, skeletons, contrast, Poppins wiring). Not run or seen. Needs: Poppins files, deploy, hand-walk |
 | 5 | Social: groups, presence, leaderboard, reactions, abuse controls | Open |
 | 6 | Web push, site-blocking extension, Android companion | Later |
 
@@ -24,7 +25,8 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 4. Run `supabase test db` (CLI and Docker) and fix anything it finds.
 5. Configure Google sign-in (README step 3).
 6. Hand-test Phase 4 after the deploy: end sound, notification (hide the tab), zen mode, History page, install the PWA, offline load.
-7. Self-host a font if the old look is wanted (D22).
+7. Add the Poppins files to `web/public/fonts` (D24).
+8. Deploy the UI changes and walk the phone flow by hand.
 
 ## Android track (not started)
 

@@ -87,4 +87,4 @@ With the Supabase CLI and Docker: `supabase start`, then `supabase test db`. The
 ## Known limits
 - A web page cannot prove a person is there. A script that fakes heartbeats can still earn credit. Anything that ranks people against each other (the community phase) must be designed knowing this.
 - A phone or background tab that suspends the page misses heartbeats. An absence of more than about 20% of a session means it counts as ended early, with the verified time kept.
-- Fonts: the page uses system fonts and makes no request to Google (D22).
+- Fonts: body text uses system fonts; headings and buttons use self-hosted Poppins once its two files are in `web/public/fonts` (D24). The page makes no request to Google (D22).

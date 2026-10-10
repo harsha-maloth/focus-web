@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Ring } from '../../components/Ring'
 import { getStartupAuthError } from '../../lib/authErrors'
@@ -11,7 +11,18 @@ type Status =
   | { kind: 'sent'; email: string }
   | { kind: 'error'; message: string }
 
+/** The login screen has no coloured header, so match the browser bar to the page while it is open. */
+function usePageThemeColor() {
+  useEffect(() => {
+    const metas = Array.from(document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'))
+    const saved = metas.map((m) => m.content)
+    for (const m of metas) m.content = (m.media || '').includes('dark') ? '#0c1519' : '#e4ece9'
+    return () => metas.forEach((m, i) => (m.content = saved[i]))
+  }, [])
+}
+
 export function LoginPage() {
+  usePageThemeColor()
   const { session, loading } = useAuth()
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<Status>(() => {

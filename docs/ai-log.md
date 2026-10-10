@@ -181,3 +181,45 @@ pgTAP never run (item 2); hand test of Settings, tags and a 1-minute session (it
 Goal: build what remained of Phase 4. Done: end sound, notifications (per device), wake lock, zen mode with ambient noise, history page, PWA shell (manifest, icons, service worker, install button), Google Fonts removed (D22), reduced-motion rule. Details in `CHANGELOG.md`.
 Not verified: nothing was run in a browser. `npm install` crashes in this workspace, so only `audio.ts`, `notify.ts` and `timer.ts` were typechecked (tsc directly). The React files, the service worker and vitest are unchecked until the deploy workflow runs. Possible problems to look for: TypeScript errors in `TimerPanel.tsx`, `SettingsPage.tsx`, `HistoryPage.tsx`; service worker caching an old build after a deploy (navigations are network-first, so a refresh should fix it); the fonts now look different.
 Context block addition: Phase 4 is written (sound, notifications, wake lock, zen, history page, PWA shell); Session 4 review fixes are live and the user reports the site works.
+
+
+---
+
+## Session 5: 2026-10-10
+
+### Goal
+Restyle the web app in an app-like look (studied from a reference Android app, structure only) using Focus colours; user chose a bottom tab bar.
+
+### Done
+Phases 1 to 3 of the plan: tokens, tab bar shell with hero header, icons, theme colour (see `CHANGELOG.md`, Session 5, and D23).
+
+### Not verified
+Nothing was run: no node_modules or network here, so typecheck, vitest and build are unchecked (CI will run them). Not seen in a browser: check a 360 px phone width in light and dark, the tab bar over the gesture bar, zen mode hiding the bar, and the installed PWA.
+
+### Open items
+Phase 4 screens (Login, Home hero, History rows, Stats cards, Settings and tag bottom sheets), Poppins files in `web/public/fonts`, skeletons and snackbar, then contrast check.
+
+
+### Session 5b (same day)
+Done: hero titles in the phone header, login restyle, session row cards with status dots, `greeting.ts` plus tests (see `CHANGELOG.md`, Session 5b). Not verified: nothing run or seen. Check: greeting uses the profile time zone; login text readable in light and dark; hidden h1 on phones; theme-color restores after login.
+Left: Stats cards, Settings and tag bottom sheets, snackbar, skeletons, Poppins files, contrast check.
+
+
+### Session 5c (same day)
+Done: BottomSheet, tag add/edit in a sheet, Stats and Settings panels (see `CHANGELOG.md`, Session 5c). Not verified: nothing run or seen. Check: sheet opens, closes by Escape and backdrop, saves a tag, covers the tab bar, keyboard focus returns to the Add tag button.
+Left: snackbar, skeleton loading, Poppins files, contrast check, History filter styling, zen mode polish.
+
+
+### Session 5d (same day)
+Done: snackbar and skeleton loading (see `CHANGELOG.md`, Session 5d). Not verified: nothing run or seen. Check: the snackbar shows after a session ends, a Settings save and a tag change; sits above the tab bar; skeletons show on a slow load; reduced motion stops the shimmer.
+Left: Poppins files, contrast check (light and dark), History filter styling, zen mode polish, then hand-test the whole phone flow.
+
+
+### Session 5e (same day)
+Done: contrast pass (accent darkened in light mode, snackbar edges per mode), History status chips, zen polish (see `CHANGELOG.md`, Session 5e). Not verified: nothing run or seen.
+Left: Poppins files, deploy and walk the whole phone flow by hand (login, timer, zen, tags sheet, snackbar, History filters, install PWA), then fix what the walk finds.
+
+
+### Session 5f (same day)
+Done: Poppins wiring with graceful fallback (D24). The font files are still to be added by the user. Not verified: nothing run or seen.
+Left: add the font files; deploy; hand-walk the phone flow; fix what that finds. The planned UI phases (1 to 4) are all written.

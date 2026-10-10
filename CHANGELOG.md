@@ -2,6 +2,45 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 5f: Poppins wiring (written, not run; font files still missing)
+- `web/public/fonts/fonts.css` (Poppins 600 and 700, swap, local() then url()), linked from `index.html`; `README.txt` lists the files to add and the OFL licence note. `--font-display` added; applied to headings, buttons, chips, stat values and the ring time. `--font` no longer lists Bricolage Grotesque (never loaded since D22).
+- The two `.woff2` files are NOT in the repo: add `Poppins-SemiBold.woff2` and `Poppins-Bold.woff2` (and `OFL.txt`) to `web/public/fonts/`. Until then the system font is used.
+- D24 records this. Not run; nothing seen in a browser.
+
+## Session 5e: contrast pass, History chips, zen polish (written, not run)
+- Contrast, computed from the token values (WCAG ratios; not checked on a screen): all text pairs in light and dark pass 4.5:1. Two findings fixed. (1) Light `--accent` `#f2542d` was 2.87:1 on the page background, under the 3:1 needed for the ring arc and chart bar; it is now `#e54f2a` (3.19:1 on the page, 3.62:1 on cards). Orange is still not used for small text. (2) Snackbar edge colours were nearly invisible in dark mode (1.5 to 2.1:1); they now use `--snack-info/success/error`, set per mode.
+- Remaining known limit: the orange/teal tag colours chosen by the user are not checked; tag names are always shown as text beside the dot.
+- History: the status filter is now a row of pill chips (All, Completed, Ended early / not verified) with `aria-pressed`; the tag filter stays a select, styled as a pill.
+- Zen mode: larger ring, spaced uppercase caption, centred buttons with larger tap targets. Behaviour is unchanged.
+- Not run: typecheck, tests, build; nothing seen in a browser.
+
+## Session 5d: snackbar and skeleton loading (written, not run)
+- New `components/Snackbar.tsx`: `SnackbarProvider` (in `App.tsx`, inside `AuthProvider`) and `useSnackbar()`. One message at a time, auto-dismiss after 5 s, Dismiss button, `role="status"`. Sits above the tab bar on phones; hidden in zen mode.
+- Used for: session complete or ended (with verified minutes), Settings saved (replaces the inline "Saved."; errors stay inline), tag added, saved and deleted.
+- New `components/Skeleton.tsx` (`SkeletonRows`, `SkeletonCards`): shimmering placeholders with one hidden "Loading…" announcement. Replace the plain "Loading…" text on History, Recent sessions and Stats. Settings and tags still show text. The shimmer is static under reduced motion (existing rule).
+- Added a `.sr-only` utility class.
+- Not run: typecheck, tests, build; nothing seen in a browser. Watch for TS narrowing on `sheet.kind` inside the new `onDone` closure in `TagsSection.tsx`.
+
+## Session 5c: Stats panels, bottom sheet, tag sheet (written, not run)
+- New `components/BottomSheet.tsx`: a modal sheet on the native `<dialog>` (browser handles focus trap, Escape, inert page). Slides up on phones, centred on wide screens; closes on backdrop click, the Close button or Escape. Content mounts only while open.
+- Tags: add and edit now happen in the sheet (name, colour swatches from the palette plus a custom colour). The inline add form and inline edit form are gone; delete still confirms inline in the row. File: `features/tags/TagsSection.tsx`.
+- Stats and Settings: sections and fieldsets are flat surface panels (`.panel`); stat cards get a 4 px teal edge, small-caps labels and a 2-column fit on phones.
+- Not run: typecheck, tests, build; nothing seen in a browser. Watch for: `noUnusedLocals` complaints, `autoFocus` in the sheet, the sheet over the tab bar (the dialog sits in the top layer, so it should cover it).
+
+## Session 5b: titles, login, session rows (written, not run)
+- Phone hero header now carries the page title: a time-of-day greeting and the name on Home, the page name on History, Stats and Settings. The page `h1` stays for screen readers (class `page-title`, visually hidden on phones; `aria-hidden` on the header copy). New `lib/greeting.ts` (`greetingFor`, `hourIn`) with unit tests.
+- Login on phones: art on top, teal panel pinned to the bottom with a light button (colours flip in dark mode); the field text stays dark on its light box. The wide layout is unchanged. The page sets the browser bar colour to the page background while it is open, and restores it on leave.
+- Session rows (Home and History) are flat cards with a status dot: green for completed, orange for ended early or not verified.
+- Not run: typecheck, tests, build; nothing seen in a browser.
+
+## Session 5: app-style look, phase 1 to 3 (written, not run)
+- Plan agreed: Focus colours in an app-style layout (D23). Bottom tab bar chosen over a drawer.
+- Tokens added to `web/src/index.css`: `--tint`, `--success`, `--header-bg`, `--header-ink`, `--tabbar-h`, `--radius-sm`, `--radius-card` (light and dark).
+- `Shell.tsx`: new hero header (`.appbar`) and bottom tab bar (`.tabbar`) for screens under 720 px; the old top bar stays on wide screens. Icons in `components/icons.tsx`. The tab bar is hidden in zen mode and respects the safe-area insets.
+- `theme-color` (index.html) and `manifest.webmanifest` now use the teal header colour (light `#0b5563`, dark `#5cc2cf`). An installed copy must be removed and installed again to pick up the manifest change. The login page has no header yet, so its status bar colour will not match until phase 4.
+- Not run: typecheck, tests, build (no node_modules or network here); nothing seen in a browser. CI will check types.
+- Still to do: Poppins font files, hero titles per page, Login, History, Stats, Settings, bottom sheets, snackbar, skeletons.
+
 ## Session 4b: Phase 4 (deployed)
 - Deployed after the typecheck fix: CI (typecheck, tests, build) passed and the user reports it works. The exact checks made (sound, notification, zen, History, install, offline) were not itemised.
 - CI typecheck failed on `TimerPanel.tsx` (TS2774: `requestFullscreen` is always defined). The Full screen button now checks `document.fullscreenEnabled`. Not run; the next deploy will show.

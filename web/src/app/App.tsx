@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SetupNotice } from '../components/SetupNotice'
+import { SnackbarProvider } from '../components/Snackbar'
 import { Shell } from '../components/Shell'
 import { AuthProvider } from '../features/auth/AuthProvider'
 import { LoginPage } from '../features/auth/LoginPage'
@@ -21,6 +22,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <SnackbarProvider>
         {/* Hash routing: GitHub Pages has no server-side rewrites. */}
         <HashRouter>
           <Routes>
@@ -36,6 +38,7 @@ export function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </HashRouter>
+        </SnackbarProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

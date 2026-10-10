@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Ring } from '../../components/Ring'
+import { useSnackbar } from '../../components/Snackbar'
 import { playEndSound, startAmbient, unlockAudio, type Ambient, type EndSound } from '../../lib/audio'
 import { notify } from '../../lib/notify'
 import { formatClock, formatMinutes } from '../../lib/time'
@@ -101,6 +102,7 @@ type TimerPanelProps = {
 
 export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambient }: TimerPanelProps) {
   const queryClient = useQueryClient()
+  const snackbar = useSnackbar()
   const running = useRunningSession(userId)
   const offset = useServerOffset()
   const tagsQuery = useTags(userId)
@@ -155,6 +157,12 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
         setUnverified(row.status !== 'completed')
         setResult(row)
         refresh()
+        snackbar(
+          row.status === 'completed'
+            ? `Session complete · ${formatMinutes(row.focused_seconds)} focused`
+            : `Session ended · ${formatMinutes(row.focused_seconds)} verified`,
+          row.status === 'completed' ? 'success' : 'info',
+        )
         playEndSound(sound)
         if (document.visibilityState === 'hidden') {
           void notify(
@@ -314,6 +322,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
       setConfirmingGiveUp(false)
       setUnverified(false)
       setResult(row)
+      snackbar(`Session ended · ${formatMinutes(row.focused_seconds)} kept`)
     } catch (err) {
       setError(messageOf(err, 'Could not end the session.'))
     }

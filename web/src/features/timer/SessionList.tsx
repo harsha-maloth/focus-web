@@ -1,3 +1,4 @@
+import { SkeletonRows } from '../../components/Skeleton'
 import type { FocusSession, Tag } from '../../lib/types'
 import { formatMinutes } from '../../lib/time'
 import { ranFullLengthUnverified } from '../../lib/timer'
@@ -51,7 +52,7 @@ export function SessionList({ userId, timezone }: { userId: string; timezone: st
   const recent = useRecentSessions(userId)
   const tags = useTags(userId)
 
-  if (recent.isPending) return <p className="muted" aria-busy="true">Loading recent sessions…</p>
+  if (recent.isPending) return <SkeletonRows count={3} label="Loading recent sessions" />
   if (recent.isError) return <p className="form-error" role="alert">Couldn't load recent sessions.</p>
   if (recent.data.length === 0) return <p className="muted">Finished sessions will show up here.</p>
 

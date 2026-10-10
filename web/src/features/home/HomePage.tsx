@@ -21,7 +21,7 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <h1>{name ? `Welcome, ${name}` : 'Welcome'}</h1>
+      <h1 className="page-title">{name ? `Welcome, ${name}` : 'Welcome'}</h1>
       <TimerPanel
         key={`${focusMinutes}-${breakMinutes}`}
         userId={userId}

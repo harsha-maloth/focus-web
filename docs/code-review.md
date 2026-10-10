@@ -43,3 +43,7 @@ The design is sound. All trusted logic sits in Postgres, clients cannot write se
 - PKCE with hash routing, and auth errors are caught before the router mounts.
 - No `service_role` key anywhere in the repo (checked with grep).
 - Pure logic (`time`, `timer`, `timezone`, `stats`, `authErrors`) is split out and unit-tested.
+
+
+## UI contrast (2026-10-10, computed from tokens, not seen on a screen)
+Text pairs pass 4.5:1 in light and dark. Light accent was raised to `#e54f2a` for 3:1 on the page background. Orange is for dots, the ring and the chart only. Snackbar edge colours are per mode. Open: contrast of user-chosen tag colours is not checked.

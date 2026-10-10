@@ -1,9 +1,17 @@
 import { useState } from 'react'
+import { SkeletonRows } from '../../components/Skeleton'
 import { useAuth } from '../auth/AuthProvider'
 import { useProfile } from '../settings/queries'
 import { useTags } from '../tags/queries'
 import { SessionRow, sessionDateFormat } from '../timer/SessionList'
 import { useHistory, type HistoryFilter } from './queries'
+
+const STATUS_CHIPS: { value: HistoryFilter['status']; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'completed', label: 'Completed' },
+  // Stored as "abandoned": ended early, or the timer ran out but presence wasn't verified.
+  { value: 'abandoned', label: 'Ended early / not verified' },
+]
 
 export function HistoryPage() {
   const { user } = useAuth()
@@ -20,19 +28,25 @@ export function HistoryPage() {
 
   return (
     <div className="page">
-      <h1>History</h1>
+      <h1 className="page-title">History</h1>
       <div className="filters">
         <div className="field">
-          <label htmlFor="history-status">Show</label>
-          <select
-            id="history-status"
-            value={filter.status}
-            onChange={(e) => setFilter({ ...filter, status: e.target.value as HistoryFilter['status'] })}
-          >
-            <option value="all">All sessions</option>
-            <option value="completed">Completed</option>
-            <option value="abandoned">Ended early or not verified</option>
-          </select>
+          <span id="history-status-label" className="field-label">
+            Show
+          </span>
+          <div className="chips" role="group" aria-labelledby="history-status-label">
+            {STATUS_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                className="chip"
+                aria-pressed={filter.status === chip.value}
+                onClick={() => setFilter({ ...filter, status: chip.value })}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="field">
           <label htmlFor="history-tag">Tag</label>
@@ -48,7 +62,7 @@ export function HistoryPage() {
         </div>
       </div>
 
-      {history.isPending ? <p className="muted" aria-busy="true">Loading sessions…</p> : null}
+      {history.isPending ? <SkeletonRows count={5} label="Loading sessions" /> : null}
       {history.isError ? (
         <p className="form-error" role="alert">Couldn't load your history. Check your connection and reload.</p>
       ) : null}

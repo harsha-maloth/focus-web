@@ -2,7 +2,9 @@
 :root {
   color-scheme: light dark;
 
-  --font: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Headings and buttons. Poppins once its files are in public/fonts (see fonts.css); otherwise the system font. */
+  --font-display: 'Poppins', var(--font);
 
   /* Sea glass, lagoon, buoy. */
   --bg: #e4ece9;
@@ -12,11 +14,24 @@
   --line: #bccdc8;
   --primary: #0b5563;
   --primary-ink: #ffffff;
-  --accent: #f2542d;
+  --accent: #e54f2a; /* a touch darker than before: 3:1 on the page background for the ring and chart */
   --danger: #b3261e;
   --focus-ring: #0b5563;
 
+  /* App-style look (D23): hero header, flat cards, tab bar. */
+  --tint: #d3e1dd;
+  --success: #0f7a4d;
+  --header-bg: var(--primary);
+  --header-ink: var(--primary-ink);
+  --tabbar-h: 3.75rem;
+  /* Snackbar sits on a dark bar in light mode and a light bar in dark mode; the edge colours follow. */
+  --snack-info: #ff7a59;
+  --snack-success: #5fd49b;
+  --snack-error: #ff8a80;
+
   --radius-field: 10px;
+  --radius-sm: 4px;
+  --radius-card: 8px;
   --radius-pill: 999px;
 
   --step--1: 0.875rem;
@@ -38,6 +53,11 @@
     --accent: #ff7a59;
     --danger: #ff8a80;
     --focus-ring: #5cc2cf;
+    --tint: #1b2e35;
+    --success: #5fd49b;
+    --snack-info: #0b5563;
+    --snack-success: #0f7a4d;
+    --snack-error: #b3261e;
   }
 }
 
@@ -934,4 +954,494 @@ body.zen-open {
 }
 .content {
   padding-bottom: max(clamp(1.5rem, 5vw, 3.5rem), env(safe-area-inset-bottom));
+}
+
+
+/* ---------------------------------------------------------------- app shell for phones (D23)
+   Hero header at the top, tab bar at the bottom. Wide screens keep the top bar. */
+.appbar,
+.tabbar {
+  display: none;
+}
+@media (max-width: 719px) {
+  .topbar {
+    display: none;
+  }
+  .appbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--header-bg);
+    color: var(--header-ink);
+    padding: max(0.85rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.85rem
+      max(1rem, env(safe-area-inset-left));
+  }
+  .appbar .brand {
+    color: var(--header-ink);
+    font-family: var(--font-display, var(--font));
+  }
+  .appbar .brand-mark {
+    border-color: color-mix(in srgb, var(--header-ink) 30%, transparent);
+    border-top-color: var(--header-ink);
+    border-right-color: var(--header-ink);
+  }
+  .appbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .appbar .btn-quiet,
+  .appbar .btn-outline {
+    color: var(--header-ink);
+    border-color: color-mix(in srgb, var(--header-ink) 55%, transparent);
+    padding: 0.35rem 0.85rem;
+    font-size: var(--step--1);
+  }
+  .content {
+    padding-bottom: calc(var(--tabbar-h) + max(1.5rem, env(safe-area-inset-bottom)));
+  }
+  .tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+  .tabbar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    color: var(--muted);
+    font-family: var(--font-display, var(--font));
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .tabbar a svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0.15rem 0.9rem;
+    box-sizing: content-box;
+    border-radius: var(--radius-pill);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .tabbar a.active {
+    color: var(--ink);
+  }
+  .tabbar a.active svg {
+    background: var(--tint);
+    color: var(--primary);
+  }
+}
+body.zen-open .tabbar {
+  display: none;
+}
+
+
+/* ---------------------------------------------------------------- phase 4a: titles, login, rows (D23) */
+.session-list li {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  border-bottom: 0;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem;
+}
+.session-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--success);
+}
+.session-status::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.session-status--early {
+  color: var(--muted);
+}
+.session-status--early::before {
+  background: var(--accent);
+}
+
+@media (max-width: 719px) {
+  /* The hero header shows the title; the page h1 stays for screen readers. */
+  .page-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .appbar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.25rem;
+    padding-bottom: 1.5rem;
+  }
+  .appbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .appbar-title {
+    margin: 0;
+    font-family: var(--font-display, var(--font));
+    font-size: var(--step-2);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .appbar-sub {
+    display: block;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+}
+
+/* Login on phones: art on top, coloured panel pinned to the bottom. */
+@media (max-width: 51.99rem) {
+  .login {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    max-width: none;
+  }
+  .login-art {
+    flex: 1;
+    justify-content: center;
+    padding: max(2rem, env(safe-area-inset-top)) 1.5rem 1.5rem;
+  }
+  .login-panel {
+    max-width: none;
+    margin: 0;
+    padding: 1.5rem max(1.5rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom))
+      max(1.5rem, env(safe-area-inset-left));
+    background: var(--header-bg);
+    color: var(--header-ink);
+  }
+  .login-panel input {
+    color: var(--ink);
+  }
+  .login-panel .muted,
+  .login-panel .divider-text {
+    color: color-mix(in srgb, var(--header-ink) 80%, transparent);
+  }
+  .login-panel .btn-primary {
+    background: var(--primary-ink);
+    color: var(--primary);
+  }
+  .login-panel .btn-outline,
+  .login-panel .btn-quiet {
+    color: var(--header-ink);
+    border-color: color-mix(in srgb, var(--header-ink) 60%, transparent);
+  }
+  .login-panel .form-error {
+    background: var(--surface);
+    border-radius: var(--radius-field);
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+
+/* ---------------------------------------------------------------- phase 4b: panels, stats, sheet (D23) */
+.panel {
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+}
+.form-wide fieldset.stack {
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.stat-grid {
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.75rem;
+}
+.stat-card {
+  border-radius: var(--radius-card);
+  border-left: 4px solid var(--primary);
+}
+.stat-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+}
+.tag-row {
+  border-bottom: 1px solid var(--line);
+}
+.tag-row:last-child {
+  border-bottom: 0;
+}
+.field-label {
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.swatch[aria-pressed='true'] {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.sheet {
+  width: min(100%, 28rem);
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+@media (max-width: 719px) {
+  .sheet {
+    width: 100%;
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+  .sheet[open] {
+    animation: sheet-up 0.22s ease-out;
+  }
+  .sheet-body::before {
+    content: '';
+    align-self: center;
+    width: 2.5rem;
+    height: 0.25rem;
+    margin-bottom: -0.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--line);
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+
+/* ---------------------------------------------------------------- phase 4c: snackbar, skeletons (D23) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.snackbar-region {
+  position: fixed;
+  inset: auto 0 calc(1.25rem + env(safe-area-inset-bottom, 0px)) 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding-inline: 1rem;
+  pointer-events: none;
+}
+.snackbar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(100%, 28rem);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-card);
+  border-left: 5px solid var(--snack-info);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  animation: snackbar-in 0.2s ease-out;
+}
+.snackbar--success {
+  border-left-color: var(--snack-success);
+}
+.snackbar--error {
+  border-left-color: var(--snack-error);
+}
+.snackbar-close {
+  flex: none;
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+@keyframes snackbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+@media (max-width: 719px) {
+  /* Sit above the tab bar. */
+  .snackbar-region {
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+  }
+}
+body.zen-open .snackbar-region {
+  display: none;
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 40rem;
+}
+.skeleton-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.95rem 1rem;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+}
+.skeleton-line {
+  display: block;
+  height: 0.8rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    90deg,
+    var(--tint) 25%,
+    color-mix(in srgb, var(--tint) 50%, var(--surface)) 50%,
+    var(--tint) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.skeleton-line--wide {
+  width: 70%;
+}
+.skeleton-line--short {
+  width: 40%;
+}
+.skeleton-line--tall {
+  height: 1.6rem;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+
+/* ---------------------------------------------------------------- phase 4d: filters, zen (D23) */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip {
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: 600;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.chip[aria-pressed='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+@media (pointer: coarse) {
+  .chip {
+    min-height: 2.5rem;
+  }
+}
+.filters {
+  align-items: flex-end;
+}
+.filters select {
+  border-radius: var(--radius-pill);
+  padding-inline: 1rem;
+}
+
+.zen-ring {
+  width: min(78vw, 56vh, 30rem);
+}
+.zen .ring-caption {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.zen .actions {
+  justify-content: center;
+}
+.zen .btn {
+  min-height: 2.9rem;
+}
+
+
+/* ---------------------------------------------------------------- phase 4e: headings font (D23) */
+h1,
+h2,
+legend,
+.btn,
+.chip,
+.stat-value,
+.ring-time {
+  font-family: var(--font-display);
 }

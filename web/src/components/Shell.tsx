@@ -1,11 +1,16 @@
 import { useEffect } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthProvider'
 import { useInstallPrompt } from '../features/pwa/useInstallPrompt'
 import { useProfile, useSaveProfile, useTimeZones } from '../features/settings/queries'
+import { greetingFor, hourIn } from '../lib/greeting'
 import { pickTimezone } from '../lib/timezone'
+import { HistoryIcon, HomeIcon, SettingsIcon, StatsIcon } from './icons'
+
+const TITLES: Record<string, string> = { '/history': 'History', '/stats': 'Stats', '/settings': 'Settings' }
 
 export function Shell() {
+  const { pathname } = useLocation()
   const { user, signOut } = useAuth()
   const userId = user!.id
   const profile = useProfile(userId)
@@ -33,6 +38,35 @@ export function Shell() {
 
   return (
     <div className="shell">
+      <header className="appbar">
+        <div className="appbar-row">
+        <NavLink to="/" className="brand" aria-label="Focus home">
+          <span className="brand-mark" aria-hidden="true" />
+          focus
+        </NavLink>
+        <div className="appbar-actions">
+          {canInstall ? (
+            <button type="button" className="btn btn-outline" onClick={() => void install()}>
+              Install
+            </button>
+          ) : null}
+          <button type="button" className="btn btn-quiet" onClick={() => void signOut()}>
+            Sign out
+          </button>
+        </div>
+        </div>
+        {/* The page's own h1 carries the same text for screen readers (hidden on phones). */}
+        <p className="appbar-title" aria-hidden="true">
+          {pathname === '/' ? (
+            <>
+              <span className="appbar-sub">{greetingFor(hourIn(profile.data?.timezone ?? 'UTC', new Date()))},</span>
+              {profile.data?.display_name?.trim() || 'there'}
+            </>
+          ) : (
+            (TITLES[pathname] ?? 'Focus')
+          )}
+        </p>
+      </header>
       <header className="topbar">
         <NavLink to="/" className="brand" aria-label="Focus home">
           <span className="brand-mark" aria-hidden="true" />
@@ -58,6 +92,24 @@ export function Shell() {
       <main className="content">
         <Outlet />
       </main>
+      <nav className="tabbar" aria-label="Main">
+        <NavLink to="/" end>
+          <HomeIcon />
+          Home
+        </NavLink>
+        <NavLink to="/history">
+          <HistoryIcon />
+          History
+        </NavLink>
+        <NavLink to="/stats">
+          <StatsIcon />
+          Stats
+        </NavLink>
+        <NavLink to="/settings">
+          <SettingsIcon />
+          Settings
+        </NavLink>
+      </nav>
     </div>
   )
 }

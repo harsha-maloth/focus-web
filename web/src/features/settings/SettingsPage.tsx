@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { useSnackbar } from '../../components/Snackbar'
 import {
   AMBIENT_LABELS,
   AMBIENT_OPTIONS,
@@ -51,7 +52,7 @@ export function SettingsPage() {
 
   return (
     <div className="page">
-      <h1>Settings</h1>
+      <h1 className="page-title">Settings</h1>
       <SettingsForm
         key={profile.data.timezone}
         userId={userId}
@@ -77,6 +78,7 @@ function SettingsForm(props: {
   const { userId, email, profile, settings, zones } = props
   const saveProfile = useSaveProfile(userId)
   const saveSettings = useSaveSettings(userId)
+  const snackbar = useSnackbar()
 
   const [name, setName] = useState(profile.display_name)
   const [timezone, setTimezone] = useState(profile.timezone)
@@ -125,7 +127,7 @@ function SettingsForm(props: {
           zen: { ...settings.zen, ambient },
         }),
       ])
-      setMessage({ ok: true, text: 'Saved.' })
+      snackbar('Settings saved', 'success')
     } catch (err) {
       setMessage({ ok: false, text: err instanceof Error ? err.message : 'Could not save.' })
     }
