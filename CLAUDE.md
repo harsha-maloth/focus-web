@@ -1,1 +1,0 @@
-Read and follow `AGENTS.md` in this folder. Key rule: log every change (repo, GitHub, Supabase, other services) in `CHANGELOG.md`, `docs/ai-log.md` and, for dashboard changes, `docs/ops-log.md`, before you finish.
