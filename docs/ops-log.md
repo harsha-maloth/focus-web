@@ -13,6 +13,7 @@ Changes made outside git: Supabase dashboard, GitHub settings, Google Cloud and 
 | 2026-10-10 | Supabase | `0002`, `0003`, `0004` applied (user confirmed in chat; exact time and any errors not recorded) | user | No down migrations; restore by dropping the added functions and columns | applied, not yet hand-tested |
 | ? | Supabase | Google provider enabled? Not done as of the last log | | | no |
 | 2026-10-10 | Supabase | Ran `supabase/checks/health_check.sql` (read-only): 21 PASS, 0 FAIL. 2 users, 7 sessions (5 abandoned, 2 completed), 2 milestones, 598 time zones | user | n/a (read-only) | yes |
+| 2026-10-10 | GitHub | Pushed merged repo from Termux (docs, AGENTS.md, health check, `||` fix, chart label). Deploy ran | user | `git revert` the commit and push | yes (user: "It works") |
 
 ## How to add a row
 Date, service, what exactly changed (names, not secrets), who ran it, how to reverse it, and whether it was checked afterwards.

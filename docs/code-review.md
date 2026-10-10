@@ -10,7 +10,7 @@ The design is sound. All trusted logic sits in Postgres, clients cannot write se
 
 | # | Finding | Fix |
 |---|---|---|
-| 1 | `web/src/lib/supabase.ts` used `??`. An unset GitHub variable arrives as `''`, so `createClient('')` threw on load and the page went blank instead of showing the setup notice. The 2026-10-10 log said this was fixed, but the fix was only in the assistant's copy. | Both values now use `|| undefined`. |
+| 1 | (Pushed and live 2026-10-10.) `web/src/lib/supabase.ts` used `??`. An unset GitHub variable arrives as `''`, so `createClient('')` threw on load and the page went blank instead of showing the setup notice. The 2026-10-10 log said this was fixed, but the fix was only in the assistant's copy. | Both values now use `|| undefined`. |
 
 ## Open, by priority
 
@@ -26,7 +26,7 @@ The design is sound. All trusted logic sits in Postgres, clients cannot write se
 7. **Presence can be faked.** Documented in the README: a script can send heartbeats and skip blur events. Do not build leaderboards that trust these numbers without caps and abuse controls (Phase 5).
 
 ### Low
-0. ~~Chart label reads like a total.~~ **Fixed 2026-10-10 (written, not yet seen live):** the label now says "scale: ..." and the hint shows the 30-day total. Original finding: The "30 min" at the top left of the Last 30 days chart is the vertical scale (minimum 30 min), not the 30-day total. On the live page, with 5 min focused in total, it looks wrong. Label it "scale: 30 min" or show the real total next to the heading (`DailyChart.tsx`).
+0. ~~Chart label reads like a total.~~ **Fixed 2026-10-10 (pushed; user reports the site works):** the label now says "scale: ..." and the hint shows the 30-day total. Original finding: The "30 min" at the top left of the Last 30 days chart is the vertical scale (minimum 30 min), not the 30-day total. On the live page, with 5 min focused in total, it looks wrong. Label it "scale: 30 min" or show the real total next to the heading (`DailyChart.tsx`).
 0. ~~Milestone count vs page~~ **Resolved 2026-10-10.** There are two accounts, both with display name "Harsha", one milestone each. The health check counts all accounts. Not a bug. Note for the social phase: display names are not unique, so leaderboards must not rely on them.
 8. **Own sessions are deletable** (`grant delete` on `focus_sessions`). Harmless for personal stats; decide whether leaderboards should read from an append-only copy.
 9. **Settings form can show a stale time zone.** If the shell sets the browser zone after the Settings page has mounted, the form keeps the old value and saving writes it back.

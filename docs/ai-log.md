@@ -126,6 +126,9 @@ I wrote `supabase/checks/health_check.sql` (read-only). The first version failed
 ### Stats page checked in the browser (later in Session 3)
 User pasted the live Stats page: Today 5 min, this week 5 min (nothing last week), this month 5 min, streak 1 day (longest 1), 30-day chart, time zone Asia/Calcutta, by tag Testing 5 min 92% and No tag 0 min 8%, one milestone (First session completed, 10 Oct), 2 completed sessions and 5 min in total. Conclusions: Phase 3 works end to end; the new-user trigger and first-load time zone setting work; tags are recorded on sessions. Found: the chart's "30 min" is its scale and reads like a total (UI fix applied afterwards: label now "scale: 30 min" and the real 30-day total shown under the chart; not yet seen live). The apparent milestone mismatch was resolved: a per-account query shows two accounts, both named Harsha, each with 1 milestone (completed 2 and 1, abandoned 2 and 3). The completed total rose from 2 (health check) to 3, so another session finished afterwards (inferred, not seen). Display names are not unique; keep in mind for leaderboards.
 
+### Pushed (end of Session 3)
+User copied the merged files into `~/focus-web` on Termux, committed and pushed. Deploy ran and the user reports it works, so the `||` fix, the chart label change and the docs are live. Lesson: with several downloaded zips, select by content (grep for a marker) rather than by name.
+
 ### Not verified
 - Browser behaviour: Settings form save, creating a tag in the UI, and a 1-minute session finishing cleanly. Stats is verified.
 - Auth dashboard settings (Site URL, Redirect URLs, Google provider) and the GitHub Actions variables: SQL cannot check these.
@@ -134,9 +137,9 @@ User pasted the live Stats page: Today 5 min, this week 5 min (nothing last week
 - Settings save, the new-user trigger, the timer and stats on the live site.
 
 ### Open items
-1. Push the merged repo. Copy files over a local checkout rather than replacing the folder, so the phone-made `package-lock.json` survives (this copy does contain one).
+1. ~~Push the merged repo~~ Done from Termux. The user picked the right zip by checking for the chart fix before copying (a stale zip had been selected first). Deploy succeeded; user reports it works.
 2. ~~Apply 0002, 0003, 0004~~ Done.
-3. Hand-test the live site: save Settings, create a tag, run a 1-minute session, check Recent sessions and Stats.
+3. Hand-test the rest of the live site: save Settings, create a tag, run a 1-minute session, check Recent sessions and Stats.
 4. Run `supabase test db`.
 5. Configure Google sign-in.
 6. Phase 4: sound and notification at the end, wake lock, history page, zen mode, PWA (self-host the font).

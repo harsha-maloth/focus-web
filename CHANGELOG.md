@@ -3,6 +3,7 @@
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
 ## Session 3: merge, review, docs
+- Pushed to GitHub from Termux (planning docs merged, agent rules, health check, `supabase.ts` fix, chart label fix). User reports it works: deploy succeeded and the live site behaves. Exact checks the user made were not itemised.
 - Fixed the Stats chart label: the top-left text now reads "scale: 30 min" instead of a bare "30 min", and the hint under the chart shows the real 30-day total. Files: `DailyChart.tsx`, `StatsPage.tsx`. Not run locally; the deploy workflow's typecheck and build cover it. Not yet seen on the live site.
 - Resolved: the milestone mismatch. Per-account query shows two accounts both named Harsha, each with 1 milestone (completed 2 and 1, abandoned 2 and 3). Nothing wrong. Completed total is now 3 (was 2 at the health check), so one more session finished since then.
 - Verified in the browser (user pasted the Stats page): Stats renders with today 5 min, week 5 min, streak 1 day, 30-day chart, tag breakdown (Testing 92%, No tag 8%), one milestone, time zone Asia/Calcutta. This also shows the browser time zone was saved to the profile on first load.

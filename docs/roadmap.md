@@ -18,7 +18,7 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 | 6 | Web push, site-blocking extension, Android companion | Later |
 
 ### Next actions (in order)
-1. Push the merged repo (with the `supabase.ts` `||` fix).
+1. ~~Push the merged repo~~ Done 2026-10-10 (deploy worked).
 2. ~~Apply migrations 0002 to 0004~~ Done (confirmed 2026-10-10).
 3. Check the live site by hand (the database side already looks healthy): save Settings, create a tag, run a short session (1 minute), check Recent sessions and Stats.
 4. Run `supabase test db` (CLI and Docker) and fix anything it finds.
