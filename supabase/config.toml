@@ -1,0 +1,20 @@
+# Minimal local-dev config for the Supabase CLI (`supabase start`).
+# If the CLI rejects a key, run `supabase init` in a scratch folder, copy the
+# generated config.toml here, and keep only the [auth] URLs below.
+project_id = "focus-web"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+# Must match the Vite dev URL (base is /focus-web/). Production URLs are set in
+# the hosted dashboard: Authentication > URL Configuration.
+site_url = "http://localhost:5173/focus-web/"
+additional_redirect_urls = ["http://localhost:5173/focus-web/", "http://127.0.0.1:5173/focus-web/"]
