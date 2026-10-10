@@ -11,7 +11,7 @@ The web app is gone from the repo (git history keeps it). Supabase stays for lat
 3. Install on the phone and compare the 7-day numbers with the phone's own Digital Wellbeing.
 4. Outside git: switch off GitHub Pages; decide whether to delete the `VITE_SUPABASE_*` Actions variables (`ops-log.md`).
 5. Run `supabase test db` once, if sync is still planned.
-6. Hand-test limits on the phone (README "Turning blocking on"), then step 3, the focus timer.
+6. Hand-test limits and a short focus session on the phone (README "Turning blocking on"): start 15 min, open a non-allowed app, check the block page, End early, check Recent sessions.
 
 ## Android track (scaffold, usage, 7-day view and limits written 2026-10-10, never built)
 
@@ -21,7 +21,7 @@ Native Kotlin and Compose; blocks apps, which a web page cannot. Research is in 
 - [~] **0. Scaffold**: written, not built. Gradle project, Kotlin, Compose, one module, CI workflow that builds the APK (D26). Hilt, Room and modules deferred
 - [~] **1. Usage stats**: written, not built. Permission flow, per-app list, 7-day strip, Room `daily_usage` (D28), tested aggregator and week maths. Still to do: longer history views, per-app trends
 - [~] **2. App limits**: written, not built. Limits tab (add, list, remove; Room `app_limit`), accessibility service foreground detection with a 30 s re-check, full-screen block activity (no overlay permission needed, D29). Still to do: edit a limit, per-day schedules, "5 minutes left" warning, restricted-settings walkthrough screen
-- [ ] **3. Focus timer**: foreground service, allowed-apps list, session history
+- [~] **3. Focus timer**: written, not built. Focus tab (presets, countdown, end early with confirm, recent sessions), Room `focus_session` and `allowed_app`, blocking of non-allowed apps by the same accessibility service (D32). Still to do: notification and end sound, notification permission, server-time or tamper checks, stats per day
 - [ ] **4. Reliability**: boot receiver, watchdog worker, time-change handling, OEM battery guidance
 - [ ] **5. Onboarding**: permission walkthrough (usage access, accessibility, overlay, notifications)
 - [ ] **6. Polish**: widget, notifications, theming, empty states, tests

@@ -2,6 +2,14 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 12: focus timer (written, not compiled)
+- New Focus tab (now the first tab): length chips (15, 25, 45, 60, 90), Start, big countdown in the header, "End early" with confirm, "Allowed during a session" list (app picker reused from Limits), Recent sessions (8). Warns when the accessibility service is off.
+- Room 5 with `Migration(4, 5)`: tables `focus_session` and `allowed_app`, DAOs `FocusSessionDao` and `AllowedAppDao`. Earlier tables are kept.
+- `BlockerService`: during a running session blocks apps not on the allowed list ("Stay focused" page with minutes left), no throttle; marks a session completed when past its end; limits check unchanged after it. It now ignores the home screen, keyboards and default dialer via `SystemPackages`. `BlockActivity` takes a title and message instead of an app label.
+- New pure `SessionMath` with 5 tests (not run). Manifest `<queries>` gained the HOME intent.
+- Decision D32. No notification, sound or foreground service yet; phone-clock timing.
+- Not run: nothing compiled or tried on a phone.
+
 ## Session 11: use the system's own daily totals (written, not compiled)
 - User asked to use the Digital Wellbeing data. Android has no public API to read that app's data. The closest source is the system's per-app daily totals (`UsageStatsManager.queryUsageStats(INTERVAL_DAILY)`), which is what screen-time screens draw on, so `UsageRepository.day` now uses it. The event-log maths (`foregroundMs`, Session 10) stays as a fallback when the system returns nothing.
 - `UsageAggregator.fromBuckets` (pure): keeps the bucket that starts at the day's midnight, sums per app, caps each app at the window. 2 new tests. Not run.

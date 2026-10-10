@@ -287,3 +287,7 @@ Goal: the user's screenshots showed 48 h 57 min in one day. Found and fixed the 
 ### Session 11: 2026-10-10
 Goal: user asked to use Digital Wellbeing data. Not readable by apps; switched to the system's daily totals with the event maths as fallback (D31); Room 4 clears stored usage. Not compiled or run. Open: push, compare with the phone's screen-time screen.
 
+
+### Session 12: 2026-10-10
+Goal: Android step 3, focus timer. Done: Focus tab, Room 5, session blocking in `BlockerService`, `SessionMath`, D32. Not compiled or run. Open: push and read CI; test on the phone (start 15 min, open a non-allowed app, End early); then notification and end sound, reboot recovery (step 4).
+

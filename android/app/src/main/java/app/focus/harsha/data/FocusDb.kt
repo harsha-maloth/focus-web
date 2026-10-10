@@ -21,6 +21,47 @@ data class DailyUsageEntity(val date: String, val pkg: String, val label: String
 @Entity(tableName = "app_limit")
 data class AppLimitEntity(@androidx.room.PrimaryKey val pkg: String, val label: String, val limitMs: Long)
 
+/** A focus session. status: running, completed or ended_early. endMs is null while running. */
+@Entity(tableName = "focus_session")
+data class FocusSessionEntity(
+    @androidx.room.PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val startMs: Long,
+    val plannedMs: Long,
+    val endMs: Long?,
+    val status: String,
+)
+
+/** An app that stays usable during a focus session. */
+@Entity(tableName = "allowed_app")
+data class AllowedAppEntity(@androidx.room.PrimaryKey val pkg: String, val label: String)
+
+@Dao
+abstract class FocusSessionDao {
+    @Insert
+    abstract suspend fun insert(session: FocusSessionEntity): Long
+
+    @Query("SELECT * FROM focus_session WHERE status = 'running' ORDER BY id DESC LIMIT 1")
+    abstract suspend fun running(): FocusSessionEntity?
+
+    @Query("UPDATE focus_session SET endMs = :endMs, status = :status WHERE id = :id AND status = 'running'")
+    abstract suspend fun finish(id: Long, endMs: Long, status: String)
+
+    @Query("SELECT * FROM focus_session WHERE status != 'running' ORDER BY startMs DESC LIMIT :limit")
+    abstract suspend fun recent(limit: Int): List<FocusSessionEntity>
+}
+
+@Dao
+abstract class AllowedAppDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsert(app: AllowedAppEntity)
+
+    @Query("DELETE FROM allowed_app WHERE pkg = :pkg")
+    abstract suspend fun delete(pkg: String)
+
+    @Query("SELECT * FROM allowed_app ORDER BY label COLLATE NOCASE")
+    abstract suspend fun all(): List<AllowedAppEntity>
+}
+
 @Dao
 abstract class AppLimitDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -51,10 +92,12 @@ abstract class DailyUsageDao {
     }
 }
 
-@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class], version = 4, exportSchema = false)
+@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class, FocusSessionEntity::class, AllowedAppEntity::class], version = 5, exportSchema = false)
 abstract class FocusDb : RoomDatabase() {
     abstract fun usage(): DailyUsageDao
     abstract fun limits(): AppLimitDao
+    abstract fun sessions(): FocusSessionDao
+    abstract fun allowed(): AllowedAppDao
 
     companion object {
         @Volatile private var instance: FocusDb? = null
@@ -67,6 +110,14 @@ abstract class FocusDb : RoomDatabase() {
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM `daily_usage`")
+            }
+        }
+
+        /** 4 to 5: adds focus_session and allowed_app. Everything else is kept. */
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `focus_session` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startMs` INTEGER NOT NULL, `plannedMs` INTEGER NOT NULL, `endMs` INTEGER, `status` TEXT NOT NULL)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `allowed_app` (`pkg` TEXT NOT NULL, `label` TEXT NOT NULL, PRIMARY KEY(`pkg`))")
             }
         }
 
@@ -87,7 +138,7 @@ abstract class FocusDb : RoomDatabase() {
         fun get(context: Context): FocusDb =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, FocusDb::class.java, "focus.db")
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                     .also { instance = it }
             }

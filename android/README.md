@@ -6,9 +6,10 @@ Clean-room: written independently, nothing taken from any reference app (D2).
 ## What it does so far (version 0.1.0)
 - Asks for **Usage access** (Settings, Special access), then lists screen time per app.
 - Shows the last 7 days as bars; tap a day to see its apps. Each day is saved on the phone in a Room database (D28), so history outlives the system's short event log.
+- **Focus tab:** pick 15, 25, 45, 60 or 90 min and start a session. While it runs, every app except Focus, the phone app, the keyboard, the home screen and the apps on your "Allowed during a session" list is blocked with a "Stay focused" page. The timer finishes by itself; "End early" asks first and saves the time so far. Recent sessions are listed. Uses the same accessibility switch as limits.
 - **Limits tab:** pick an app and a daily limit (15 to 120 min). An accessibility service watches which app comes to the front; once today's use reaches the limit, a full-screen "Time's up" page opens over it (Back or "Go home" returns to the launcher). It resets at midnight.
 - Has no INTERNET permission: nothing leaves the phone.
-- Not built yet: focus sessions, allowed-apps list, schedules, reboot recovery checks, Supabase sync (see `docs/roadmap.md`).
+- Not built yet: timer notification and end sound, schedules, reboot recovery checks, Supabase sync (see `docs/roadmap.md`).
 - Nothing here has been compiled yet (including the Room and KSP setup); expect small fixes from the first CI run.
 
 ## Build without Android Studio
@@ -26,7 +27,7 @@ If the build fails, open the failed step in the run and send the red lines. Noth
 3. Limits tab > "Open accessibility" > Focus > turn on. Android shows a warning; Focus reads only which app is in front, no screen content (`res/xml/blocker_service.xml`).
 4. Add a limit. Test with a short one (15 min on an app you have already used for longer): opening it should show "Time's up".
 
-Known limits: it can only react after the app opens (a flash of the app is possible); some phones kill the service to save battery (reliability work is step 4); an app open across midnight loses its pre-midnight time on the new day.
+Known limits: the session timer uses the phone clock, so changing the clock can cheat it (a later Supabase sync would use server time); it can only react after the app opens (a flash of the app is possible); some phones kill the service to save battery (reliability work is step 4); an app open across midnight loses its pre-midnight time on the new day.
 
 ## Keep updates installable (recommended, one time)
 Android only installs an update over an app signed with the same key. Without a stored key, each cloud build gets a new throwaway key, so you must uninstall before installing the next build.
@@ -46,9 +47,9 @@ android/
   app/src/main/java/app/focus/harsha/
     MainActivity.kt
     ui/       Theme, Format, HomeScreen
-    limits/   LimitMath (pure, tested), BlockerService (accessibility), BlockActivity, InstalledApps, AccessibilityStatus
+    limits/   LimitMath, SessionMath (pure, tested), SystemPackages, BlockerService (accessibility), BlockActivity, InstalledApps, AccessibilityStatus
     usage/    UsageAggregator, WeekMath (pure, tested), UsageRepository (system calls), UsageSync
-    data/     FocusDb (Room: daily_usage, app_limit)
+    data/     FocusDb (Room: daily_usage, app_limit, focus_session, allowed_app)
   app/src/test/...                JUnit tests for the pure parts
 ```
 

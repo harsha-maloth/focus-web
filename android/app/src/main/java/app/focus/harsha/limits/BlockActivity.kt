@@ -23,15 +23,16 @@ import androidx.compose.ui.unit.sp
 import app.focus.harsha.ui.FocusTheme
 import app.focus.harsha.ui.HeaderTeal
 
-/** Full-screen "limit reached" page shown over a limited app. Back and the button both go Home. */
+/** Full-screen block page shown over a limited or not-allowed app. Back and the button both go Home. */
 class BlockActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val label = intent.getStringExtra(EXTRA_LABEL) ?: "This app"
+        val title = intent.getStringExtra(EXTRA_TITLE) ?: "Time's up"
+        val message = intent.getStringExtra(EXTRA_MESSAGE) ?: "This app is blocked right now."
         setContent {
             FocusTheme {
                 BackHandler { goHome() }
-                BlockScreen(label, onHome = ::goHome)
+                BlockScreen(title, message, onHome = ::goHome)
             }
         }
     }
@@ -46,12 +47,13 @@ class BlockActivity : ComponentActivity() {
     }
 
     companion object {
-        const val EXTRA_LABEL = "label"
+        const val EXTRA_TITLE = "title"
+        const val EXTRA_MESSAGE = "message"
     }
 }
 
 @Composable
-private fun BlockScreen(label: String, onHome: () -> Unit) {
+private fun BlockScreen(title: String, message: String, onHome: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -60,9 +62,9 @@ private fun BlockScreen(label: String, onHome: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Time's up", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Text(title, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
         Text(
-            "You reached today's limit for $label. It opens again tomorrow, or change the limit in Focus.",
+            message,
             color = Color(0xFFCFE6E9),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,

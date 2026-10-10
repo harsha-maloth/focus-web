@@ -20,7 +20,7 @@ Any change to the repo, GitHub settings, Supabase, or any other service this pro
 | Anything done | `CHANGELOG.md`: add a bullet under today's heading (create it if missing). Newest first. |
 | A work session | `docs/ai-log.md`: add or extend a dated "Session N" entry: goal, done, not verified, open items. Refresh the context block at the end. |
 | Dashboard or service change (no git trace) | `docs/ops-log.md`: one row per change: date, service, what, who ran it, how to undo. |
-| A choice with trade-offs | `docs/decisions.md`: next number (D32, D33, ...), what and why. |
+| A choice with trade-offs | `docs/decisions.md`: next number (D33, D34, ...), what and why. |
 | Phase or feature state changed | `docs/roadmap.md` state table and `docs/web-plan.md` phase checklist. |
 | New or changed migration | `README.md` layout and setup lists, `docs/web-plan.md` section 13 (as built), and note whether it is **applied** to the Supabase project. |
 | Bug found or fixed, risk found | `docs/code-review.md`. |

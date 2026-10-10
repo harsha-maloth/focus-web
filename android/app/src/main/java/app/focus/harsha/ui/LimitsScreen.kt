@@ -227,7 +227,7 @@ private fun LimitCard(row: LimitRow, onDelete: () -> Unit) {
 }
 
 @Composable
-private fun AppPickerDialog(context: Context, onPick: (InstalledApp) -> Unit, onDismiss: () -> Unit) {
+internal fun AppPickerDialog(context: Context, onPick: (InstalledApp) -> Unit, onDismiss: () -> Unit) {
     var apps by remember { mutableStateOf<List<InstalledApp>?>(null) }
     LaunchedEffect(Unit) { apps = withContext(Dispatchers.IO) { InstalledApps.launchable(context) } }
     AlertDialog(
