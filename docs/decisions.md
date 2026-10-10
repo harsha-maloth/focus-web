@@ -91,3 +91,14 @@ The web app is paused after the first UI v2 step (D25) and work moves to the And
 - **Permissions:** only `PACKAGE_USAGE_STATS` plus a launcher-apps `<queries>` entry. No INTERNET yet, so nothing leaves the phone. No `QUERY_ALL_PACKAGES`.
 - **Application id** `app.focus.harsha`, confirmed by the user 2026-10-10. Permanent: it cannot change after the first install without breaking updates.
 - **Look:** same colour tokens as the web app, dark teal hero header with the total, flat cards.
+
+## D27: Remove the web app; Android is the product (2026-10-10)
+Supersedes D7, D10 to D14, D22 to D25 for new work (the records stay as history). The user decided to drop the web app and focus on the Android app, the only place app blocking is possible.
+- `web/` and `.github/workflows/deploy.yml` are deleted; git history keeps them. The `docs-check` reminder now watches `android/`, `supabase/` and workflows.
+- **Supabase is kept** (`supabase/`, migrations 0001 to 0004, applied). The Android app can later sign in and sync sessions with `source = 'android'`. Nothing in the app uses it yet and the app still has no INTERNET permission.
+- Web docs (`web-plan.md`, web parts of `architecture.md` and `code-review.md`) are kept but marked archived.
+- The repo is still named `focus-web`; renaming it is the user's call (it changes the clone URL; the Pages URL goes away anyway).
+- Left to do outside git: switch off GitHub Pages and decide whether to drop the Actions variables `VITE_SUPABASE_*` (logged as open in `ops-log.md`).
+
+## D28: Room stores daily usage; the system log is only the source (2026-10-10)
+Android keeps usage events for only a few days, so the app copies each day into Room (`daily_usage`: date, package, label, ms) and reads the 7-day view from there. A fresh read only overwrites a stored day if it is non-empty and at least as large (`WeekMath.shouldReplace`), so purged system data can never wipe history. KSP and Room 2.6.1 were added; this is the first dependency beyond Compose, and it has not been compiled yet. Known limit: an app open across midnight loses its pre-midnight part on the new day.

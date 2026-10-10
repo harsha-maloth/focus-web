@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,14 +49,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import app.focus.harsha.usage.AppUsage
 import app.focus.harsha.usage.UsageRepository
+import app.focus.harsha.usage.UsageSync
+import app.focus.harsha.usage.WeekMath
 import app.focus.harsha.usage.UsageSummary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.TextStyle
+import java.util.Locale
 
 private sealed interface UsageState {
     data object Loading : UsageState
     data object NoAccess : UsageState
-    data class Ready(val summary: UsageSummary) : UsageState
+    data class Ready(val week: Map<LocalDate, UsageSummary>) : UsageState
     data class Failed(val message: String) : UsageState
 }
 
@@ -65,6 +72,7 @@ fun HomeScreen() {
     var hasAccess by remember { mutableStateOf(UsageRepository.hasAccess(context)) }
     var refresh by remember { mutableIntStateOf(0) }
     var state by remember { mutableStateOf<UsageState>(UsageState.Loading) }
+    var selected by remember { mutableStateOf(LocalDate.now(ZoneId.systemDefault())) }
 
     // Coming back from the Settings screen: check the permission again and reload.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
@@ -78,37 +86,99 @@ fun HomeScreen() {
             return@LaunchedEffect
         }
         state = try {
-            UsageState.Ready(withContext(Dispatchers.Default) { UsageRepository.today(context) })
+            UsageState.Ready(withContext(Dispatchers.IO) { UsageSync.loadWeek(context) })
         } catch (e: Exception) {
             UsageState.Failed(e.message ?: "Could not read usage.")
         }
     }
 
-    val summary = (state as? UsageState.Ready)?.summary
+    val week = (state as? UsageState.Ready)?.week
+    val summary = week?.get(selected)
+    val today = LocalDate.now(ZoneId.systemDefault())
+    val title = if (selected == today) "Screen time today" else "Screen time, " + dayName(selected, long = true)
 
     Column(
         Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Header(totalText = summary?.let { formatDuration(it.totalMs) })
+        Header(
+            title = title,
+            totalText = summary?.let { formatDuration(it.totalMs) },
+            averageText = week?.let { w -> "Daily average " + formatDuration(WeekMath.averageMs(w.values.map { it.totalMs })) },
+        )
+        if (week != null) {
+            WeekStrip(week, selected, today) { selected = it }
+        }
 
         when (val s = state) {
-            UsageState.Loading -> Message("Reading today's usage…")
+            UsageState.Loading -> Message("Reading usage…")
             UsageState.NoAccess -> AccessCard(context)
             is UsageState.Failed -> Message(s.message)
-            is UsageState.Ready ->
-                if (s.summary.apps.isEmpty()) {
-                    Message("No app has been open for a minute yet today.")
+            is UsageState.Ready -> {
+                val day = s.week[selected]
+                if (day == null || day.apps.isEmpty()) {
+                    Message("No app was open for a minute on this day.")
                 } else {
-                    AppList(s.summary)
+                    AppList(day)
                 }
+            }
+        }
+    }
+}
+
+private fun dayName(date: LocalDate, long: Boolean = false): String =
+    date.dayOfWeek.getDisplayName(if (long) TextStyle.FULL else TextStyle.SHORT, Locale.getDefault())
+
+/** Seven bars, oldest to newest. Tap a bar to show that day below. */
+@Composable
+private fun WeekStrip(week: Map<LocalDate, UsageSummary>, selected: LocalDate, today: LocalDate, onSelect: (LocalDate) -> Unit) {
+    val days = WeekMath.lastDays(today)
+    val longest = days.maxOf { week[it]?.totalMs ?: 0L }.coerceAtLeast(1L)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        for (day in days) {
+            val ms = week[day]?.totalMs ?: 0L
+            val isSelected = day == selected
+            Column(
+                Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onSelect(day) }
+                    .padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Box(Modifier.height(64.dp), contentAlignment = Alignment.BottomCenter) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(0.6f)
+                            .height((6 + 58 * ms.toFloat() / longest.toFloat()).dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                            ),
+                    )
+                }
+                Text(
+                    dayName(day),
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun Header(totalText: String?) {
+private fun Header(title: String, totalText: String?, averageText: String?) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -117,13 +187,16 @@ private fun Header(totalText: String?) {
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Screen time today", color = Color(0xFFCFE6E9), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(title, color = Color(0xFFCFE6E9), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
             Text(
                 totalText ?: "–",
                 color = Color.White,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
             )
+            if (averageText != null) {
+                Text(averageText, color = Color(0xFFCFE6E9), fontSize = 13.sp)
+            }
         }
     }
 }

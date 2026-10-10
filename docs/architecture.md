@@ -1,3 +1,5 @@
+> **Archived 2026-10-10 (D27):** the web app was removed. Kept for history and because the Supabase design still applies.
+
 # Focus architecture
 
 Two parts: the **web app** (built, below) and the **Android app** (planned, further down).

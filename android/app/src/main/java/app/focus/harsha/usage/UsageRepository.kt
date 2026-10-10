@@ -30,12 +30,17 @@ object UsageRepository {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    /** Foreground time per app since local midnight. Needs usage access. */
-    fun today(context: Context): UsageSummary {
+    /**
+     * Foreground time per app on one local day (midnight to midnight, or to now for today).
+     * Needs usage access. An app already open at midnight loses the part before midnight on the
+     * new day, because the system only reports the resume event on the earlier day.
+     */
+    fun day(context: Context, date: LocalDate): UsageSummary {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val zone = ZoneId.systemDefault()
-        val start = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
-        val end = System.currentTimeMillis()
+        val start = date.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = minOf(date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(), System.currentTimeMillis())
+        if (end <= start) return UsageSummary(emptyList(), 0L)
 
         val raw = ArrayList<RawEvent>()
         val events = usm.queryEvents(start, end)

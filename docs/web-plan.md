@@ -1,3 +1,5 @@
+> **Archived 2026-10-10 (D27):** the web app was removed. Kept for history and because the Supabase design still applies.
+
 # Focus Web: Plan (GitHub Pages + Supabase)
 
 Status (2026-10-10): Phases 0 to 3 are written and Phases 0 to 1 are confirmed live. Phases 4 to 6 are not started. Section 9 tracks each phase; section 13 lists what was built and where it differs from this plan. Code and migrations are in this repo (`web/`, `supabase/`).

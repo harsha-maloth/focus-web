@@ -1,3 +1,5 @@
+> **Archived 2026-10-10 (D27):** this review covers the removed web app and the Supabase side. Database findings (items 2, 7, 8) still apply; the React findings do not.
+
 # Code review (2026-10-10)
 
 Scope: everything in `focus-web` at the time of the merge: 4 migrations, the pgTAP file, the React app (auth, timer, tags, settings, stats) and the deploy workflow. Reviewed by reading. **Nothing was executed**: no network, no Postgres, no `npm ci` in the reviewer's environment. Typecheck, vitest and build are covered by the GitHub Actions run; the pgTAP tests have never been run.

@@ -4,9 +4,11 @@ Native Kotlin and Jetpack Compose. Sideloaded as an APK, not published on Google
 Clean-room: written independently, nothing taken from any reference app (D2).
 
 ## What it does so far (version 0.1.0)
-- Asks for **Usage access** (Settings, Special access), then lists today's screen time per app.
+- Asks for **Usage access** (Settings, Special access), then lists screen time per app.
+- Shows the last 7 days as bars; tap a day to see its apps. Each day is saved on the phone in a Room database (D28), so history outlives the system's short event log.
 - Has no INTERNET permission: nothing leaves the phone.
 - Not built yet: app limits, blocking, overlay, focus sessions, Supabase sync (see `docs/roadmap.md`).
+- Nothing here has been compiled yet (including the Room and KSP setup); expect small fixes from the first CI run.
 
 ## Build without Android Studio
 1. Push to `main`. The workflow `.github/workflows/android.yml` runs the unit tests and builds the APK.
@@ -35,7 +37,8 @@ android/
   app/src/main/java/app/focus/harsha/
     MainActivity.kt
     ui/       Theme, Format, HomeScreen
-    usage/    UsageAggregator (pure, tested), UsageRepository (system calls)
+    usage/    UsageAggregator, WeekMath (pure, tested), UsageRepository (system calls), UsageSync
+    data/     FocusDb (Room: daily_usage)
   app/src/test/...                JUnit tests for the pure parts
 ```
 

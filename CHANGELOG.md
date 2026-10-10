@@ -2,6 +2,16 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 8: remove web, Android-first (written, not compiled)
+- **Removed** `web/` (React app, PWA, tests, fonts) and `.github/workflows/deploy.yml`. Decision D27. Git history keeps them. `docs-check.yml` now watches `android/`, `supabase/` and workflows instead of `web/`.
+- **Kept** `supabase/` untouched (migrations 0001 to 0004, health check, pgTAP). Marked web docs as archived (`web-plan.md`, `architecture.md`, `code-review.md`).
+- **Android:** added Room (2.6.1) and KSP (2.0.21-1.0.28): `data/FocusDb.kt` (`daily_usage` table, DAO, database). `UsageRepository.day(date)` replaces `today()`. `UsageSync.loadWeek` copies the last 7 days into Room and reads them back; `WeekMath` (pure) holds `lastDays`, `shouldReplace` (a purged or shorter read never overwrites a fuller stored day) and `averageMs`. Decision D28.
+- **UI:** `HomeScreen` shows a 7-bar strip under the header; tapping a bar shows that day's apps; the header shows a daily average.
+- **Tests:** new `WeekMathTest` (5 cases).
+- **Docs:** root README rewritten for Android-first; roadmap, docs index, android README, AGENTS (next decision is D29) updated.
+- **Not run:** no Gradle build, no tests, no device. Google's Maven was unreachable from the workspace and there is no Android SDK, so even the compile is unchecked. Expect fixes from the first CI run.
+- **Outside git, still to do (user):** switch off GitHub Pages; decide about the `VITE_SUPABASE_*` Actions variables (see `docs/ops-log.md`).
+
 ## Session 7: Android scaffold (written, never compiled)
 - New `android/` project: Gradle (AGP 8.7.3, Kotlin 2.0.21, Compose BOM 2024.10.01, compile and target SDK 35, min 26), one `app` module, application id `app.focus.harsha` (confirmed by the user, final).
 - Screen: usage-access permission card, then today's screen time per app (total in a teal hero header, flat cards with a bar). `usage/UsageAggregator.kt` pairs resume and pause events per activity (pure, unit-tested); `usage/UsageRepository.kt` reads the system log. Manifest: `PACKAGE_USAGE_STATS` and a launcher `<queries>` entry; no INTERNET.

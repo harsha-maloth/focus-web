@@ -1,6 +1,6 @@
 # Focus: project docs
 
-Research, decisions, plans and logs for the whole project. Code is in `../web` and `../supabase`; setup and status are in the root `../README.md`. These docs were merged in from the former private planning repo `focus` (D15).
+Research, decisions, plans and logs for the whole project. Code is in `../android` and `../supabase` (the web app was removed, D27); setup and status are in the root `../README.md`. These docs were merged in from the former private planning repo `focus` (D15).
 
 ## Where to start
 - Resuming work: read the latest entry and the context block at the end of `ai-log.md`, then `roadmap.md`.
@@ -11,9 +11,9 @@ Research, decisions, plans and logs for the whole project. Code is in `../web` a
 | File | What it is |
 |---|---|
 | `roadmap.md` | Current state of both tracks, next actions, open questions |
-| `web-plan.md` | Web plan, phase status, schema and the "as built" differences |
-| `code-review.md` | Review of the web code and database, with fixes and open issues |
-| `decisions.md` | Decision records D1 to D25: what was chosen and why |
+| `web-plan.md` | Archived web plan; section 6 and 13 still describe the Supabase schema |
+| `code-review.md` | Archived review of the web code and database |
+| `decisions.md` | Decision records D1 to D28: what was chosen and why |
 | `ai-log.md` | Chronological log of AI-assisted sessions, with a context block to paste into a new session |
 | `../CHANGELOG.md` | Dated changes to the repo |
 | `architecture.md` | Web architecture as built, and the planned Android architecture |

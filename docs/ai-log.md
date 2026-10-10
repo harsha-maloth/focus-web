@@ -262,3 +262,12 @@ Open items: (1) push, read the first CI result, fix errors; (2) set the optional
 Context block addition: Android app lives in `android/` (Kotlin, Compose, one module, sideloaded, built by `android.yml`). Written but never compiled.
 
 Update (same session): the user confirmed the application id `app.focus.harsha`. Open item (3) is closed; wording that called it a placeholder was removed from `android/README.md`, `app/build.gradle.kts`, D26 and the changelog.
+
+
+### Session 8: 2026-10-10
+Goal: remove the web app and make the Android app the product; add Room and a weekly view.
+Done: deleted `web/` and the Pages deploy workflow (D27); kept Supabase; archived web docs; added Room, KSP, `UsageSync`, `WeekMath`, 7-day strip UI and tests (D28); rewrote README, roadmap and indexes (see `CHANGELOG.md`, Session 8).
+Not verified: nothing compiled or run. Google Maven was blocked in the workspace and no Android SDK exists there.
+Open items: (1) push and read the first CI result, fix errors; (2) signing-key secret; (3) check numbers against Digital Wellbeing on the phone; (4) switch off GitHub Pages and review Actions variables (user, in `ops-log.md`); (5) step 2, app limits with the accessibility service.
+Context block addition: the repo is Android-first. `web/` is gone (history only). `supabase/` is kept for later sync, applied but unused by the app. Android has Room (`daily_usage`), a 7-day view, and has never been built.
+

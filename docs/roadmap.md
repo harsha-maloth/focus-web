@@ -1,41 +1,25 @@
 # Roadmap
 
-Updated 2026-10-10. Two tracks share one repo and, later, one Supabase backend.
+Updated 2026-10-10. Android-first (D27); the Supabase backend is kept for later sync.
 
-## Web track (active)
+## Web track: removed 2026-10-10 (D27)
+The web app is gone from the repo (git history keeps it). Supabase stays for later Android sync. The old web phase table and next actions are in git history and `web-plan.md` (archived).
 
-Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review.md`.
+## Next actions (in order)
+1. Push, read the first CI result of the Android build, fix errors (never compiled; Room and KSP are new).
+2. Set the optional signing-key secret so APK updates install over old ones (`android/README.md`).
+3. Install on the phone and compare the 7-day numbers with the phone's own Digital Wellbeing.
+4. Outside git: switch off GitHub Pages; decide whether to delete the `VITE_SUPABASE_*` Actions variables (`ops-log.md`).
+5. Run `supabase test db` once, if sync is still planned.
+6. Step 2: app limits (accessibility service, overlay).
 
-| Phase | What | State |
-|---|---|---|
-| 0 | Setup: Supabase, repo, Pages deploy, migration 0001 | Done, live |
-| 1 | Auth and profile: magic link, protected routes, settings | Magic link confirmed. Google provider not configured. Settings save unconfirmed |
-| 2 | Timer and sessions: server-timed sessions, tags, distraction log, recent list | Written. 7 sessions recorded on the live database; browser flow not hand-checked |
-| 3 | Stats: totals, streaks, milestones, 30-day chart, tag breakdown | Done: checked in the browser 2026-10-10 (chart scale label is confusing, see code-review) |
-| Hardening | 0002 to 0004: stale sessions, heartbeat presence, time zone list | Applied and verified by the health check (2026-10-10). pgTAP tests not yet run |
-| 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Deployed 2026-10-10, CI green, user reports it works (checks not itemised) |
-| UI | App-style look in Focus colours (D23, D24) | All planned parts written 2026-10-10 (tab bar, hero titles, login, panels, tag sheet, snackbar, skeletons, contrast, Poppins wiring). Not run or seen. Needs: Poppins files, deploy, hand-walk |
-| UI v2 | Full UI/UX redesign, bold and app-like (D25, plan in web-plan.md section 14) | Planned 2026-10-10, not started. Step 0 is a hand walk of the current build |
-| 5 | Social: groups, presence, leaderboard, reactions, abuse controls | Open |
-| 6 | Web push, site-blocking extension, Android companion | Later |
-
-### Next actions (in order)
-1. ~~Push the merged repo~~ Done 2026-10-10 (deploy worked).
-2. ~~Apply migrations 0002 to 0004~~ Done (confirmed 2026-10-10).
-3. Check the live site by hand (the database side already looks healthy): save Settings, create a tag, run a short session (1 minute), check Recent sessions and Stats.
-4. Run `supabase test db` (CLI and Docker) and fix anything it finds.
-5. Configure Google sign-in (README step 3).
-6. Hand-test Phase 4 after the deploy: end sound, notification (hide the tab), zen mode, History page, install the PWA, offline load.
-7. Add the Poppins files to `web/public/fonts` (D24).
-8. Deploy the UI changes and walk the phone flow by hand.
-
-## Android track (scaffold and usage screen written 2026-10-10, never built)
+## Android track (scaffold, usage screen and 7-day view written 2026-10-10, never built)
 
 Native Kotlin and Compose; blocks apps, which a web page cannot. Research is in `research-log.md`, `reference-structure.md` and `android-requirements.md`; planned design in `architecture.md`.
 
 ### MVP build order
 - [~] **0. Scaffold**: written, not built. Gradle project, Kotlin, Compose, one module, CI workflow that builds the APK (D26). Hilt, Room and modules deferred
-- [~] **1. Usage stats**: written, not built. Permission flow and today's per-app list with a tested aggregator. Still to do: Room tables, weekly view, daily history
+- [~] **1. Usage stats**: written, not built. Permission flow, per-app list, 7-day strip, Room `daily_usage` (D28), tested aggregator and week maths. Still to do: longer history views, per-app trends
 - [ ] **2. App limits**: limits CRUD, accessibility service foreground detection, overlay block screen
 - [ ] **3. Focus timer**: foreground service, allowed-apps list, session history
 - [ ] **4. Reliability**: boot receiver, watchdog worker, time-change handling, OEM battery guidance
@@ -62,5 +46,5 @@ Native Kotlin and Compose; blocks apps, which a web page cannot. Research is in 
 - Android: final package id (e.g. `app.focus.<yourname>`)
 - Android: Play Store or side-load only at first
 - Monetization model
-- Pause support in the web timer (D14): needs its own server-side accounting
+- Android timer: reuse the server-timed session functions in Supabase, or keep sessions local first
 - Whether the research notes should stay in this public repo (D15)

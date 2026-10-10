@@ -22,7 +22,7 @@ jobs:
           fi
           changed=$(git diff --name-only "$base" HEAD 2>/dev/null || true)
           echo "$changed"
-          if echo "$changed" | grep -qE '^(web/|supabase/|\.github/workflows/)'; then
+          if echo "$changed" | grep -qE '^(android/|supabase/|\.github/workflows/)'; then
             if ! echo "$changed" | grep -qE '^(CHANGELOG\.md|docs/ai-log\.md)$'; then
               echo "::warning::Code, migrations or workflows changed but CHANGELOG.md and docs/ai-log.md did not. See AGENTS.md."
             fi
