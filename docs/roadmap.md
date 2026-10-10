@@ -13,7 +13,7 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 | 2 | Timer and sessions: server-timed sessions, tags, distraction log, recent list | Written. 7 sessions recorded on the live database; browser flow not hand-checked |
 | 3 | Stats: totals, streaks, milestones, 30-day chart, tag breakdown | Done: checked in the browser 2026-10-10 (chart scale label is confusing, see code-review) |
 | Hardening | 0002 to 0004: stale sessions, heartbeat presence, time zone list | Applied and verified by the health check (2026-10-10). pgTAP tests not yet run |
-| 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Written 2026-10-10 (Session 4b); not run, not seen in a browser |
+| 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Deployed 2026-10-10, CI green, user reports it works (checks not itemised) |
 | 5 | Social: groups, presence, leaderboard, reactions, abuse controls | Open |
 | 6 | Web push, site-blocking extension, Android companion | Later |
 

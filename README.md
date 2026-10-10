@@ -16,7 +16,7 @@ Live: https://harsha-maloth.github.io/focus-web/
 | Stats: totals, week comparison, 30-day chart, tags, streaks, milestones | Done: checked in the browser 2026-10-10 |
 | Heartbeat presence and server time zone list (migration 0004) | Migrations 0002 to 0004 applied; health check passed 2026-10-10 |
 | Google sign-in | Code written, provider not configured |
-| Sound, notifications, wake lock, zen mode, history page, PWA shell | Written 2026-10-10, not run or seen in a browser |
+| Sound, notifications, wake lock, zen mode, history page, PWA shell | Deployed 2026-10-10, CI green, user reports it works |
 | Groups and leaderboards | Not started |
 | Android app | Research done, scaffold not started |
 
