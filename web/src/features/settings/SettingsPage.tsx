@@ -35,6 +35,7 @@ export function SettingsPage() {
     <div className="page">
       <h1>Settings</h1>
       <SettingsForm
+        key={profile.data.timezone}
         userId={userId}
         email={user?.email ?? ''}
         profile={profile.data}

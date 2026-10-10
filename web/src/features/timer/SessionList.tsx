@@ -1,4 +1,5 @@
 import { formatMinutes } from '../../lib/time'
+import { ranFullLengthUnverified } from '../../lib/timer'
 import { TagChip } from '../tags/TagChip'
 import { useTags } from '../tags/queries'
 import { useRecentSessions } from './queries'
@@ -33,7 +34,15 @@ export function SessionList({ userId, timezone }: { userId: string; timezone: st
               </div>
               <span className="session-length">{formatMinutes(s.focused_seconds)}</span>
               <span className={s.status === 'completed' ? 'session-status' : 'session-status session-status--early'}>
-                {s.status === 'completed' ? 'Completed' : 'Ended early'}
+                {s.status === 'completed' ? (
+                  'Completed'
+                ) : ranFullLengthUnverified(s) ? (
+                  <span title="The timer ran out, but this page wasn't open for enough of it, so only the verified time was kept.">
+                    Not verified
+                  </span>
+                ) : (
+                  'Ended early'
+                )}
               </span>
               <span className="muted">
                 {s.distraction_count} {s.distraction_count === 1 ? 'distraction' : 'distractions'}

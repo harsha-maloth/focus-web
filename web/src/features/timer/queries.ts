@@ -76,7 +76,7 @@ export async function rpcEndSession(
     p_session_id: sessionId,
     p_status: status,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw Object.assign(new Error(error.message), { code: error.code })
   return data as FocusSession
 }
 

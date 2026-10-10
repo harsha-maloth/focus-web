@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { HEARTBEAT_MS, STALE_GRACE_MS, isStale, secondsRemaining } from './timer'
+import {
+  HEARTBEAT_MS,
+  STALE_GRACE_MS,
+  isNotReachedError,
+  isStale,
+  ranFullLengthUnverified,
+  secondsRemaining,
+} from './timer'
 
 const START = 1_000_000_000_000
 
@@ -31,5 +38,24 @@ describe('isStale', () => {
 describe('heartbeat', () => {
   it('beats well inside the 90 s the server tolerates', () => {
     expect(HEARTBEAT_MS).toBeLessThan(90_000 / 2)
+  })
+})
+
+describe('isNotReachedError', () => {
+  it('matches the SQLSTATE, not the wording', () => {
+    expect(isNotReachedError(Object.assign(new Error('reworded'), { code: '22023' }))).toBe(true)
+    expect(isNotReachedError(new Error('session has not reached its planned length'))).toBe(false)
+    expect(isNotReachedError(null)).toBe(false)
+  })
+})
+
+describe('ranFullLengthUnverified', () => {
+  const base = { started_at: '2026-10-10T10:00:00Z', planned_seconds: 600 }
+  it('is true when abandoned at the planned end', () => {
+    expect(ranFullLengthUnverified({ ...base, status: 'abandoned', ended_at: '2026-10-10T10:10:00Z' })).toBe(true)
+  })
+  it('is false when given up early or completed', () => {
+    expect(ranFullLengthUnverified({ ...base, status: 'abandoned', ended_at: '2026-10-10T10:03:00Z' })).toBe(false)
+    expect(ranFullLengthUnverified({ ...base, status: 'completed', ended_at: '2026-10-10T10:10:00Z' })).toBe(false)
   })
 })

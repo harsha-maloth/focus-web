@@ -159,3 +159,20 @@ Rules: clean-room (reference apps studied for structure only, nothing copied); n
 User: harsha-maloth on GitHub; works mostly from an Android phone (Termux) and also Windows + PowerShell; IST timezone; prefers short copy-paste commands.
 ```
 
+
+
+---
+
+## Session 4: 2026-10-10
+
+### Goal
+Fix the issues listed in `code-review.md`.
+
+### Done
+Fixed review items 4, 5, 9 and 10 in the web app (see `CHANGELOG.md`, Session 4). Added unit tests for `isNotReachedError` and `ranFullLengthUnverified`.
+
+### Not verified
+Typecheck, vitest and build were not run: `npm ci` failed here (registry unreachable). Run `npm test` and `npm run typecheck` locally or let the deploy workflow do it, then hand-check the timer and Settings.
+
+### Left open (not fixable in code now)
+pgTAP never run (item 2); hand test of Settings, tags and a 1-minute session (item 3); no sound, wake lock, zen, PWA or history page (item 6); faked heartbeats (item 7, a design limit for Phase 5); deletable own sessions (8); Google Fonts self-hosting (11, needs network to fetch the font files); Supabase free-tier pausing (12).

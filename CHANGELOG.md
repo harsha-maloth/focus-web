@@ -2,6 +2,13 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 4: code-review fixes
+- Fixed review #4: `TimerPanel.complete()` now retries on SQLSTATE `22023` (via `isNotReachedError` in `timer.ts`; `rpcEndSession` keeps the error `code`) instead of matching message text. No migration change.
+- Fixed review #5: the running-timer view now tells the user to keep the page open and visible; hidden or sleeping time isn't verified.
+- Fixed review #10: Recent sessions shows "Not verified" (with a tooltip) when a session ran to its planned end but lacked presence, and "Ended early" only for real early ends (`ranFullLengthUnverified`).
+- Fixed review #9: `SettingsForm` is keyed on the profile time zone, so it remounts if the zone changes after the page mounted.
+- Added unit tests for the two new helpers. Not run: `npm ci` failed in the reviewer's environment (registry unreachable), so typecheck and vitest are covered by the GitHub Actions run after push.
+
 ## Session 3: merge, review, docs
 - Pushed to GitHub from Termux (planning docs merged, agent rules, health check, `supabase.ts` fix, chart label fix). User reports it works: deploy succeeded and the live site behaves. Exact checks the user made were not itemised.
 - Fixed the Stats chart label: the top-left text now reads "scale: 30 min" instead of a bare "30 min", and the hint under the chart shows the real 30-day total. Files: `DailyChart.tsx`, `StatsPage.tsx`. Not run locally; the deploy workflow's typecheck and build cover it. Not yet seen on the live site.

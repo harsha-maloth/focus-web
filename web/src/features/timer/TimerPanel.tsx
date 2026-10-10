@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Ring } from '../../components/Ring'
 import { formatClock, formatMinutes } from '../../lib/time'
-import { HEARTBEAT_MS, isStale, secondsRemaining } from '../../lib/timer'
+import { HEARTBEAT_MS, isNotReachedError, isStale, secondsRemaining } from '../../lib/timer'
 import type { FocusSession, Tag } from '../../lib/types'
 import { TagChip } from '../tags/TagChip'
 import { useTags } from '../tags/queries'
@@ -140,7 +140,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
         return
       } catch (err) {
         const message = messageOf(err, 'Could not finish the session.')
-        if (!message.includes('not reached')) {
+        if (!isNotReachedError(err)) {
           setError(message)
           completing.current = null
           return
@@ -329,6 +329,10 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
             {session.distraction_count === 0
               ? 'No distractions so far. Leaving this tab counts as one.'
               : `${session.distraction_count} ${session.distraction_count === 1 ? 'distraction' : 'distractions'} so far.`}
+          </p>
+          <p className="hint">
+            Keep this page open and visible. Time with the tab hidden or the phone asleep isn't verified, and
+            if too much is missing the session counts as ended early.
           </p>
           {error ? (
             <div className="stack">
