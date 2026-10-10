@@ -62,3 +62,6 @@ A session running more than 5 minutes past its planned end is closed by `start_s
 
 ## D21: Stats rules (2026-10-10, migration 0003)
 Days use the profile time zone and the day a session started. Time counts from completed and abandoned sessions. A streak day needs at least one completed session, and a streak stays alive if the last such day was yesterday. Weeks start on Monday. Numbers come from `my_stats()` in Postgres; `award_milestones()` is the only writer of milestones.
+
+## D22: Sounds are generated, fonts are system fonts (2026-10-10)
+End sound and ambient noise come from the Web Audio API, so there are no audio files to license or cache. Notifications are an opt-in stored on the device, since browser permission is per device. The Google Fonts links were removed so the page makes no request to Google and works offline; the system font stack in `--font` applies. To get the old look back, self-host the Bricolage Grotesque files in `web/public/fonts` and add an `@font-face` rule.

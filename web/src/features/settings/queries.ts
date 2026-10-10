@@ -50,7 +50,7 @@ export function useTimeZones() {
 
 export type ProfileChanges = Pick<Profile, 'display_name' | 'timezone'> &
   Partial<Pick<Profile, 'timezone_confirmed'>>
-export type SettingsChanges = Pick<UserSettings, 'default_minutes' | 'break_minutes'>
+export type SettingsChanges = Pick<UserSettings, 'default_minutes' | 'break_minutes' | 'sound' | 'zen'>
 
 export function useSaveProfile(userId: string) {
   const queryClient = useQueryClient()

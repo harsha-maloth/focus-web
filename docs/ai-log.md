@@ -176,3 +176,8 @@ Typecheck, vitest and build were not run: `npm ci` failed here (registry unreach
 
 ### Left open (not fixable in code now)
 pgTAP never run (item 2); hand test of Settings, tags and a 1-minute session (item 3); no sound, wake lock, zen, PWA or history page (item 6); faked heartbeats (item 7, a design limit for Phase 5); deletable own sessions (8); Google Fonts self-hosting (11, needs network to fetch the font files); Supabase free-tier pausing (12).
+
+### Session 4b: Phase 4 (later the same day)
+Goal: build what remained of Phase 4. Done: end sound, notifications (per device), wake lock, zen mode with ambient noise, history page, PWA shell (manifest, icons, service worker, install button), Google Fonts removed (D22), reduced-motion rule. Details in `CHANGELOG.md`.
+Not verified: nothing was run in a browser. `npm install` crashes in this workspace, so only `audio.ts`, `notify.ts` and `timer.ts` were typechecked (tsc directly). The React files, the service worker and vitest are unchecked until the deploy workflow runs. Possible problems to look for: TypeScript errors in `TimerPanel.tsx`, `SettingsPage.tsx`, `HistoryPage.tsx`; service worker caching an old build after a deploy (navigations are network-first, so a refresh should fix it); the fonts now look different.
+Context block addition: Phase 4 is written (sound, notifications, wake lock, zen, history page, PWA shell); Session 4 review fixes are live and the user reports the site works.

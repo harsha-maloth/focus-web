@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { normalizeSound, readAmbient } from '../../lib/audio'
 import { SessionList } from '../timer/SessionList'
 import { TimerPanel } from '../timer/TimerPanel'
 import { useAuth } from '../auth/AuthProvider'
@@ -25,8 +27,13 @@ export function HomePage() {
         userId={userId}
         defaultMinutes={focusMinutes}
         breakMinutes={breakMinutes}
+        sound={normalizeSound(settings.data?.sound)}
+        ambient={readAmbient(settings.data?.zen)}
       />
       <SessionList userId={userId} timezone={profile.data?.timezone ?? 'UTC'} />
+      <p>
+        <Link to="/history">See all sessions</Link>
+      </p>
     </div>
   )
 }

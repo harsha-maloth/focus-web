@@ -1,6 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Ring } from '../../components/Ring'
+import { playEndSound, startAmbient, unlockAudio, type Ambient, type EndSound } from '../../lib/audio'
+import { notify } from '../../lib/notify'
 import { formatClock, formatMinutes } from '../../lib/time'
 import { HEARTBEAT_MS, isNotReachedError, isStale, secondsRemaining } from '../../lib/timer'
 import type { FocusSession, Tag } from '../../lib/types'
@@ -16,6 +19,7 @@ import {
   useServerOffset,
 } from './queries'
 import { useNow } from './useNow'
+import { useWakeLock } from './useWakeLock'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const messageOf = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback)
@@ -82,9 +86,15 @@ function StartControls(p: StartControlsProps) {
   )
 }
 
-type TimerPanelProps = { userId: string; defaultMinutes: number; breakMinutes: number }
+type TimerPanelProps = {
+  userId: string
+  defaultMinutes: number
+  breakMinutes: number
+  sound: EndSound
+  ambient: Ambient
+}
 
-export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelProps) {
+export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambient }: TimerPanelProps) {
   const queryClient = useQueryClient()
   const running = useRunningSession(userId)
   const offset = useServerOffset()
@@ -102,6 +112,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
   const [confirmingGiveUp, setConfirmingGiveUp] = useState(false)
   const [breakEnd, setBreakEnd] = useState<number | null>(null)
   const [breakOver, setBreakOver] = useState(false)
+  const [zen, setZen] = useState(false)
   const completing = useRef<string | null>(null)
 
   const tags = tagsQuery.data ?? []
@@ -116,11 +127,15 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
   const stale = session !== null && isStale(startMs, session.planned_seconds, now)
   const breakRemaining = breakEnd !== null ? Math.ceil((breakEnd - now) / 1000) : 0
   const onBreak = breakEnd !== null && breakRemaining > 0
+  // Zen only makes sense while a live session is running.
+  const zenOn = zen && session !== null && !stale
+  useWakeLock((session !== null && !stale) || onBreak)
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ['running-session', userId] })
     void queryClient.invalidateQueries({ queryKey: ['recent-sessions', userId] })
     void queryClient.invalidateQueries({ queryKey: ['stats', userId] })
+    void queryClient.invalidateQueries({ queryKey: ['history', userId] })
   }
 
   // The server only accepts "completed" once the planned time has really passed
@@ -134,6 +149,13 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
         setUnverified(row.status !== 'completed')
         setResult(row)
         refresh()
+        playEndSound(sound)
+        if (document.visibilityState === 'hidden') {
+          void notify(
+            row.status === 'completed' ? 'Session complete' : 'Session ended',
+            `${formatMinutes(row.focused_seconds)} focused.`,
+          )
+        }
         void rpcAwardMilestones().finally(() => {
           void queryClient.invalidateQueries({ queryKey: ['stats', userId] })
         })
@@ -164,8 +186,32 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
     if (breakEnd !== null && breakRemaining <= 0) {
       setBreakEnd(null)
       setBreakOver(true)
+      playEndSound(sound)
+      if (document.visibilityState === 'hidden') void notify('Break over', 'Ready for the next session?')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breakEnd, breakRemaining])
+
+  // Zen mode: full screen where the browser allows it. Escape leaves full screen, which leaves zen.
+  useEffect(() => {
+    if (!zenOn) return
+    const request = document.documentElement.requestFullscreen?.()
+    if (request) request.catch(() => {})
+    const onChange = () => {
+      if (!document.fullscreenElement) setZen(false)
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange)
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+    }
+  }, [zenOn])
+
+  // Ambient noise plays only in zen mode.
+  useEffect(() => {
+    if (!zenOn || ambient === 'off') return
+    return startAmbient(ambient)
+  }, [zenOn, ambient])
 
   // Tell the server the page is open. It only counts time it can see these beats for,
   // and only a session with enough of them completes. Failures (offline, session
@@ -235,6 +281,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
 
   async function onStart() {
     if (!minutesValid) return
+    unlockAudio()
     setBusy(true)
     setError(null)
     setResult(null)
@@ -268,6 +315,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
   }
 
   function onStartBreak() {
+    unlockAudio()
     setBreakOver(false)
     setBreakEnd(Date.now() + (offset.data ?? 0) + breakMinutes * 60_000)
   }
@@ -361,6 +409,9 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
               </div>
             ) : (
               <div className="actions">
+                <button type="button" className="btn btn-outline" onClick={() => setZen(true)}>
+                  Zen mode
+                </button>
                 <button type="button" className="btn btn-outline" onClick={() => setConfirmingGiveUp(true)}>
                   Give up
                 </button>
@@ -372,6 +423,26 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
           <span className="ring-time">{formatClock(remaining)}</span>
           <span className="ring-caption">remaining</span>
         </Ring>
+        {zenOn
+          ? createPortal(
+              <div className="zen" role="dialog" aria-label="Zen mode">
+                <Ring className="zen-ring" progress={Math.max(0, remaining) / session.planned_seconds}>
+                  <span className="ring-time">{formatClock(remaining)}</span>
+                  <span className="ring-caption">{due ? 'wrapping up' : 'remaining'}</span>
+                </Ring>
+                <p className="muted">
+                  {session.distraction_count === 0
+                    ? 'No distractions so far.'
+                    : `${session.distraction_count} ${session.distraction_count === 1 ? 'distraction' : 'distractions'} so far.`}
+                  {ambient !== 'off' ? ` Ambient: ${ambient} noise.` : ''}
+                </p>
+                <button type="button" className="btn btn-outline" onClick={() => setZen(false)}>
+                  Exit zen
+                </button>
+              </div>,
+              document.body,
+            )
+          : null}
       </div>
     )
   }

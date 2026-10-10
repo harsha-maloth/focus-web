@@ -16,7 +16,7 @@ Live: https://harsha-maloth.github.io/focus-web/
 | Stats: totals, week comparison, 30-day chart, tags, streaks, milestones | Done: checked in the browser 2026-10-10 |
 | Heartbeat presence and server time zone list (migration 0004) | Migrations 0002 to 0004 applied; health check passed 2026-10-10 |
 | Google sign-in | Code written, provider not configured |
-| Zen mode, sound, notifications, PWA, history page | Not started |
+| Sound, notifications, wake lock, zen mode, history page, PWA shell | Written 2026-10-10, not run or seen in a browser |
 | Groups and leaderboards | Not started |
 | Android app | Research done, scaffold not started |
 
@@ -26,7 +26,7 @@ See `docs/roadmap.md` for next steps and `docs/code-review.md` for known issues.
 
 ```
 docs/                research, decisions, plans, logs (start at docs/README.md)
-web/                 Vite + React + TypeScript app
+web/                 Vite + React + TypeScript app (PWA: public/sw.js, manifest, icons)
 supabase/
   migrations/        0001_init, 0002_tz_confirmed_and_stale_sessions, 0003_stats, 0004_presence_and_timezones
   tests/database/    pgTAP tests (row isolation, session rules, stats, presence)
@@ -87,4 +87,4 @@ With the Supabase CLI and Docker: `supabase start`, then `supabase test db`. The
 ## Known limits
 - A web page cannot prove a person is there. A script that fakes heartbeats can still earn credit. Anything that ranks people against each other (the community phase) must be designed knowing this.
 - A phone or background tab that suspends the page misses heartbeats. An absence of more than about 20% of a session means it counts as ended early, with the verified time kept.
-- Fonts come from Google Fonts, so the page makes a request to Google on load.
+- Fonts: the page uses system fonts and makes no request to Google (D22).

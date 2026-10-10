@@ -22,7 +22,7 @@ The design is sound. All trusted logic sits in Postgres, clients cannot write se
 ### Medium
 4. ~~**Fragile error matching.**~~ **Fixed in Session 4 (not yet run or pushed):** retry now keys on SQLSTATE 22023. Original: `TimerPanel.complete()` retries only if the server message contains "not reached". If the SQL text in `end_session` is reworded, auto-complete stops retrying. Prefer matching on a stable SQLSTATE or `hint`.
 5. ~~**Hidden tabs and phones.**~~ **Fixed in Session 4 (UI notice added; not yet run or pushed).** Original: Browsers throttle timers in background tabs, so heartbeats can be more than 90 s apart. That time is not credited, and an absence over about 20% makes a session finish as "Ended early" even when the countdown reached zero. This matches the design (leaving the tab is a distraction) but should be said in the UI, not only in the README.
-6. **Planned features missing.** No end-of-session sound or browser notification, no Screen Wake Lock, no zen mode, no PWA/offline shell, no full history page (the home page shows the last 8 sessions). The `sound` and `zen` settings columns exist but have no UI.
+6. ~~**Planned features missing.**~~ **Written in Session 4b (sound, notification, wake lock, zen, PWA shell, history page); not run or seen in a browser.** Original: No end-of-session sound or browser notification, no Screen Wake Lock, no zen mode, no PWA/offline shell, no full history page (the home page shows the last 8 sessions). The `sound` and `zen` settings columns exist but have no UI.
 7. **Presence can be faked.** Documented in the README: a script can send heartbeats and skip blur events. Do not build leaderboards that trust these numbers without caps and abuse controls (Phase 5).
 
 ### Low
@@ -31,7 +31,7 @@ The design is sound. All trusted logic sits in Postgres, clients cannot write se
 8. **Own sessions are deletable** (`grant delete` on `focus_sessions`). Harmless for personal stats; decide whether leaderboards should read from an append-only copy.
 9. ~~**Settings form can show a stale time zone.**~~ **Fixed in Session 4 (form keyed on zone; not yet run or pushed).** Original: If the shell sets the browser zone after the Settings page has mounted, the form keeps the old value and saving writes it back.
 10. ~~**"Ended early" label.**~~ **Fixed in Session 4 (list shows "Not verified"; not yet run or pushed).** Original: A session whose timer ran out but lacked verified presence is stored as `abandoned` and shown as "Ended early", the same as giving up. The timer panel explains it once, the list does not.
-11. **Google Fonts** are loaded from Google's CDN (`index.html`). Mention it in the privacy note, and self-host the font when the PWA work starts so the shell works offline.
+11. ~~**Google Fonts**~~ **Fixed in Session 4b: links removed, system fonts used (D22).** Original: are loaded from Google's CDN (`index.html`). Mention it in the privacy note, and self-host the font when the PWA work starts so the shell works offline.
 12. **Supabase free tier** pauses inactive projects. Check current limits before sharing the link widely.
 
 ## What is good (keep)

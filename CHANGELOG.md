@@ -2,6 +2,19 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 4b: Phase 4 (written, not run)
+- Session 4 fixes were pushed (commit 85690f9) and the user reports the site works after the deploy; exact checks not itemised.
+- Sound: end-of-session chime or bell, generated with Web Audio (no audio files). Setting stored in `user_settings.sound` (`none`, `chime`, `bell`). Test button in Settings. Files: `lib/audio.ts`, `SettingsPage.tsx`, `TimerPanel.tsx`.
+- Notifications: opt-in per device (localStorage), shown only when the tab is hidden at the end of a session or break. `lib/notify.ts`.
+- Wake lock: screen stays on during a session and a break, re-taken when the tab returns. `features/timer/useWakeLock.ts`.
+- Zen mode: full-screen timer from the running view, with optional ambient brown or white noise (stored as `zen.ambient` in `user_settings.zen`). Escape leaves it.
+- History page (`/history`): all finished sessions, 20 at a time, filter by status and tag. Home links to it. `SessionRow` is shared with the Recent list.
+- PWA: `manifest.webmanifest`, icons (192, 512, maskable), `sw.js` offline shell (own origin only, Supabase calls never cached), "Install app" button where the browser offers it. The service worker registers only in the production build.
+- Privacy: removed the Google Fonts links, so the page no longer contacts Google on load. The app uses the system font stack until a font is self-hosted (the workspace could not download font files). Closes review #11.
+- Polish: reduced-motion rule, empty states on History.
+- Added unit tests for `normalizeSound` and `readAmbient`.
+- Not run: typecheck, vitest and build (npm install fails in the workspace). Only `audio.ts`, `notify.ts` and `timer.ts` were typechecked, with `tsc` directly. The deploy workflow will check the rest. Nothing was seen in a browser.
+
 ## Session 4: code-review fixes
 - Fixed review #4: `TimerPanel.complete()` now retries on SQLSTATE `22023` (via `isNotReachedError` in `timer.ts`; `rpcEndSession` keeps the error `code`) instead of matching message text. No migration change.
 - Fixed review #5: the running-timer view now tells the user to keep the page open and visible; hidden or sleeping time isn't verified.

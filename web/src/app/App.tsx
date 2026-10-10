@@ -5,6 +5,7 @@ import { Shell } from '../components/Shell'
 import { AuthProvider } from '../features/auth/AuthProvider'
 import { LoginPage } from '../features/auth/LoginPage'
 import { RequireAuth } from '../features/auth/RequireAuth'
+import { HistoryPage } from '../features/history/HistoryPage'
 import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { StatsPage } from '../features/stats/StatsPage'
@@ -27,6 +28,7 @@ export function App() {
             <Route element={<RequireAuth />}>
               <Route element={<Shell />}>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/history" element={<HistoryPage />} />
                 <Route path="/stats" element={<StatsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

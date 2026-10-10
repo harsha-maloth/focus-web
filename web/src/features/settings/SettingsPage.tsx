@@ -1,5 +1,23 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import {
+  AMBIENT_LABELS,
+  AMBIENT_OPTIONS,
+  SOUND_LABELS,
+  SOUND_OPTIONS,
+  normalizeSound,
+  playEndSound,
+  readAmbient,
+  unlockAudio,
+  type Ambient,
+  type EndSound,
+} from '../../lib/audio'
+import {
+  disableNotifications,
+  enableNotifications,
+  notificationsEnabled,
+  notificationsSupported,
+} from '../../lib/notify'
 import { useAuth } from '../auth/AuthProvider'
 import { TagsSection } from '../tags/TagsSection'
 import {
@@ -64,7 +82,24 @@ function SettingsForm(props: {
   const [timezone, setTimezone] = useState(profile.timezone)
   const [focusMinutes, setFocusMinutes] = useState(String(settings.default_minutes))
   const [breakMinutes, setBreakMinutes] = useState(String(settings.break_minutes))
+  const [sound, setSound] = useState<EndSound>(normalizeSound(settings.sound))
+  const [ambient, setAmbient] = useState<Ambient>(readAmbient(settings.zen))
+  const [notifyOn, setNotifyOn] = useState(notificationsEnabled)
+  const [notifyNote, setNotifyNote] = useState<string | null>(null)
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
+
+  async function onToggleNotify(next: boolean) {
+    setNotifyNote(null)
+    if (!next) {
+      disableNotifications()
+      setNotifyOn(false)
+      return
+    }
+    const result = await enableNotifications()
+    setNotifyOn(result === 'enabled')
+    if (result === 'denied') setNotifyNote('Notifications are blocked for this site. Allow them in the browser settings.')
+    if (result === 'unsupported') setNotifyNote("This browser doesn't support notifications.")
+  }
 
   const focus = Number(focusMinutes)
   const rest = Number(breakMinutes)
@@ -83,7 +118,12 @@ function SettingsForm(props: {
           timezone,
           timezone_confirmed: true,
         }),
-        saveSettings.mutateAsync({ default_minutes: focus, break_minutes: rest }),
+        saveSettings.mutateAsync({
+          default_minutes: focus,
+          break_minutes: rest,
+          sound,
+          zen: { ...settings.zen, ambient },
+        }),
       ])
       setMessage({ ok: true, text: 'Saved.' })
     } catch (err) {
@@ -157,6 +197,54 @@ function SettingsForm(props: {
           <p className="form-error" role="alert">
             Focus must be 1–240 minutes and break 1–60 minutes.
           </p>
+        ) : null}
+      </fieldset>
+
+      <fieldset className="stack">
+        <legend>Sound and alerts</legend>
+        <div className="field">
+          <label htmlFor="end-sound">End of session sound</label>
+          <div className="actions">
+            <select id="end-sound" value={sound} onChange={(e) => setSound(normalizeSound(e.target.value))}>
+              {SOUND_OPTIONS.map((o) => (
+                <option key={o} value={o}>
+                  {SOUND_LABELS[o]}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={sound === 'none'}
+              onClick={() => {
+                unlockAudio()
+                playEndSound(sound)
+              }}
+            >
+              Test sound
+            </button>
+          </div>
+        </div>
+        <div className="field">
+          <label htmlFor="ambient">Ambient sound in zen mode</label>
+          <select id="ambient" value={ambient} onChange={(e) => setAmbient(readAmbient({ ambient: e.target.value }))}>
+            {AMBIENT_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {AMBIENT_LABELS[o]}
+              </option>
+            ))}
+          </select>
+          <p className="hint">Generated in your browser. Plays only while zen mode is open.</p>
+        </div>
+        {notificationsSupported() ? (
+          <div className="field">
+            <label className="check">
+              <input type="checkbox" checked={notifyOn} onChange={(e) => void onToggleNotify(e.target.checked)} />
+              <span>Notify me when a session ends while this tab is hidden</span>
+            </label>
+            <p className="hint">This choice is saved on this device only.</p>
+            {notifyNote ? <p className="form-error" role="alert">{notifyNote}</p> : null}
+          </div>
         ) : null}
       </fieldset>
 

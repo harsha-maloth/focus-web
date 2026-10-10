@@ -13,7 +13,7 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 | 2 | Timer and sessions: server-timed sessions, tags, distraction log, recent list | Written. 7 sessions recorded on the live database; browser flow not hand-checked |
 | 3 | Stats: totals, streaks, milestones, 30-day chart, tag breakdown | Done: checked in the browser 2026-10-10 (chart scale label is confusing, see code-review) |
 | Hardening | 0002 to 0004: stale sessions, heartbeat presence, time zone list | Applied and verified by the health check (2026-10-10). pgTAP tests not yet run |
-| 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Open |
+| 4 | Zen mode, sound, notifications, wake lock, PWA, history page, polish | Written 2026-10-10 (Session 4b); not run, not seen in a browser |
 | 5 | Social: groups, presence, leaderboard, reactions, abuse controls | Open |
 | 6 | Web push, site-blocking extension, Android companion | Later |
 
@@ -23,7 +23,8 @@ Details, schema and as-built notes: `web-plan.md`. Review findings: `code-review
 3. Check the live site by hand (the database side already looks healthy): save Settings, create a tag, run a short session (1 minute), check Recent sessions and Stats.
 4. Run `supabase test db` (CLI and Docker) and fix anything it finds.
 5. Configure Google sign-in (README step 3).
-6. Phase 4 items that change the timer experience: sound and notification at the end, then wake lock, then a history page.
+6. Hand-test Phase 4 after the deploy: end sound, notification (hide the tab), zen mode, History page, install the PWA, offline load.
+7. Self-host a font if the old look is wanted (D22).
 
 ## Android track (not started)
 

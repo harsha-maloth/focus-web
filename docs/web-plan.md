@@ -186,10 +186,12 @@ Legend: done = built and confirmed working; written = code in the repo, not yet 
 - [x] 0004: heartbeat presence, away time subtracted, server-supplied time zone list (D16 to D18)
 - [x] 0002 to 0004 applied to the Supabase project (user confirmed 2026-10-10; health check passed all 21 checks)
 
-### Phase 4: zen mode, PWA, polish (M): open
-- [ ] Zen full-screen mode and ambient sound (`sound` and `zen` columns exist, no UI)
-- [ ] PWA manifest, offline timer shell, install prompt (self-host the font first)
-- [ ] Accessibility pass, mobile layout, empty states
+### Phase 4: zen mode, PWA, polish (M): written 2026-10-10, not run
+- [x] End sound, per-device notification, wake lock (written, not verified)
+- [x] Zen full-screen mode and ambient noise (`sound` and `zen` columns now have a UI) (written, not verified)
+- [x] History page with status and tag filters (written, not verified)
+- [x] PWA manifest, icons, offline shell, install button; Google Fonts removed (D22) (written, not verified)
+- [ ] Full accessibility pass on a real device; reduced-motion rule and empty states added
 
 ### Phase 5: social (L): open
 - [ ] Groups, invite links, join flow (tables not created yet)
@@ -205,7 +207,7 @@ Legend: done = built and confirmed working; written = code in the repo, not yet 
 - [x] RLS enabled on every table (pgTAP isolation tests written, not yet run)
 - [x] No `service_role` key anywhere in the repo or build (checked 2026-10-10)
 - [x] Input validation in RPCs and table checks (length limits, allowed values)
-- [ ] Privacy note in the app: what is stored (include the Google Fonts request), how to export and delete data. Delete exists; export does not
+- [ ] Privacy note in the app: what is stored, how to export and delete data. Delete exists; export does not. (Google Fonts request removed, D22)
 - [x] Account deletion removes all user data (`delete_my_account`, cascades from `auth.users`)
 - [ ] Dependabot or regular dependency updates
 
