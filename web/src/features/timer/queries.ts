@@ -88,6 +88,12 @@ export async function rpcLogEvent(sessionId: string, type: 'blur' | 'focus'): Pr
   if (error) throw new Error(error.message)
 }
 
+/** Tells the server the page is open. Lets it count the time toward a completed session. */
+export async function rpcHeartbeat(sessionId: string): Promise<void> {
+  const { error } = await supabase.rpc('session_heartbeat', { p_session_id: sessionId })
+  if (error) throw new Error(error.message)
+}
+
 /** Awards milestones the new session may have earned. Failure is harmless: Stats retries. */
 export async function rpcAwardMilestones(): Promise<void> {
   await supabase.rpc('award_milestones')

@@ -6,14 +6,16 @@ A web page can't see or block other apps. This is a timer and tracker, not a blo
 
 ## Status
 
-Phases 0 and 1 are written: project scaffold, deploy workflow, first database migration, email-link and Google sign-in, protected routes, profile and timer-default settings. The timer itself is Phase 2.
+Phases 0 to 3 are written: scaffold, deploy workflow, database migrations, email-link and Google sign-in, protected routes, profile and timer-default settings, and the focus timer (server-timed sessions, distraction logging on tab leave, recent sessions list, tags, a client-side break timer), and Phase 3 stats (daily, weekly and monthly totals, week comparison, 30-day chart, tag breakdown, streaks, milestones, all computed in Postgres). Zen mode, PWA and the community come later.
+
+Migration 0004 hardens the timer: the open page sends a heartbeat, a session completes only with enough verified time, time away from the tab is no longer counted as focused, and the time zone list comes from the server so the app never sets a zone the database rejects.
 
 ## Layout
 
 ```
 web/                 Vite + React + TypeScript app
 supabase/
-  migrations/        versioned SQL (0001_init.sql, 0002_tz_confirmed_and_stale_sessions.sql)
+  migrations/        versioned SQL (0001_init, 0002_tz_confirmed_and_stale_sessions, 0003_stats, 0004_presence_and_timezones)
   tests/database/    pgTAP tests (row isolation, session rules)
 .github/workflows/   build and deploy to GitHub Pages
 ```
@@ -58,5 +60,10 @@ With the Supabase CLI and Docker: `supabase start`, then `supabase test db`.
 
 ## Rules to keep
 - Row level security stays on for every table.
-- Sessions are written only through `start_session`, `end_session` and `log_session_event`, which use server time.
+- Sessions are written only through `start_session`, `end_session`, `log_session_event` and `session_heartbeat`, which use server time.
+- Credited time comes only from the server: elapsed time, minus whatever the heartbeats could not verify or the person spent away from the tab (the larger of the two, not both). Completing needs 80% verified presence (`presence_required()` in 0004, one place to change).
 - No secrets in the repo. The anon key is public by design and is safe only because of row level security.
+
+## Known limits
+- A web page cannot prove a person is there. Heartbeats make idle or scripted sessions much harder to credit, but a script that fakes heartbeats can still do it. Anything that ranks people against each other (the community phase) should be designed knowing this.
+- A phone that suspends the page misses heartbeats. A long enough absence (more than about 20% of a session) means it counts as ended early, with the verified time kept.

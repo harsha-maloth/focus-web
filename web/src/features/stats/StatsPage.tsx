@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom'
 import { compareWeeks, milestoneLabel } from '../../lib/stats'
-import { formatDuration, shortDay } from '../../lib/time'
+import { formatDuration, shortDate } from '../../lib/time'
 import { useAuth } from '../auth/AuthProvider'
 import { DailyChart } from './DailyChart'
 import { useStats } from './queries'
@@ -65,7 +66,10 @@ export function StatsPage() {
       <section className="stack" aria-labelledby="daily-heading">
         <h2 id="daily-heading">Last 30 days</h2>
         <DailyChart data={s.daily} />
-        <p className="hint">Days are counted in your time zone ({s.timezone}), by when a session started.</p>
+        <p className="hint">
+          Days are counted in your time zone ({s.timezone}), by when a session started.{' '}
+          <Link to="/settings">Change it in Settings</Link>.
+        </p>
       </section>
 
       <section className="stack" aria-labelledby="tags-stats-heading">
@@ -113,7 +117,7 @@ export function StatsPage() {
             {s.milestones.map((m) => (
               <li key={`${m.type}-${m.value}`}>
                 <span className="milestone-name">{milestoneLabel(m.type, m.value)}</span>
-                <span className="muted">{shortDay(m.achieved_at.slice(0, 10))}</span>
+                <span className="muted">{shortDate(m.achieved_at, s.timezone)}</span>
               </li>
             ))}
           </ul>

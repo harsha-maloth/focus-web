@@ -41,7 +41,12 @@ export function useUpdateTag(userId: string) {
       const { error } = await supabase.from('tags').update(fields).eq('id', id)
       if (error) throw new Error(tagErrorMessage(error.message))
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tags', userId] }),
+    // Renaming or recolouring shows up in the by-tag stats too.
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['tags', userId] }),
+        queryClient.invalidateQueries({ queryKey: ['stats', userId] }),
+      ]),
   })
 }
 
@@ -57,6 +62,7 @@ export function useDeleteTag(userId: string) {
       void queryClient.invalidateQueries({ queryKey: ['tags', userId] })
       void queryClient.invalidateQueries({ queryKey: ['recent-sessions', userId] })
       void queryClient.invalidateQueries({ queryKey: ['running-session', userId] })
+      void queryClient.invalidateQueries({ queryKey: ['stats', userId] })
     },
   })
 }

@@ -2,21 +2,20 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Ring } from '../../components/Ring'
 import { formatClock, formatMinutes } from '../../lib/time'
+import { HEARTBEAT_MS, isStale, secondsRemaining } from '../../lib/timer'
 import type { FocusSession, Tag } from '../../lib/types'
 import { TagChip } from '../tags/TagChip'
 import { useTags } from '../tags/queries'
 import {
   rpcAwardMilestones,
   rpcEndSession,
+  rpcHeartbeat,
   rpcLogEvent,
   rpcStartSession,
   useRunningSession,
   useServerOffset,
 } from './queries'
 import { useNow } from './useNow'
-
-/** A session left running this long past its planned end no longer counts (see start_session). */
-const STALE_GRACE_MS = 300_000
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const messageOf = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback)
@@ -96,6 +95,8 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
   const [minutes, setMinutes] = useState(String(defaultMinutes))
   const [tagChoice, setTagChoice] = useState(() => loadTag(tagKey))
   const [result, setResult] = useState<FocusSession | null>(null)
+  // The timer ran out but the server could not verify enough of it, so it did not count as completed.
+  const [unverified, setUnverified] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirmingGiveUp, setConfirmingGiveUp] = useState(false)
@@ -110,9 +111,9 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
 
   const now = useNow(offset.data ?? 0, session !== null || breakEnd !== null)
   const startMs = session ? new Date(session.started_at).getTime() : 0
-  const remaining = session ? Math.ceil((startMs + session.planned_seconds * 1000 - now) / 1000) : 0
+  const remaining = session ? secondsRemaining(startMs, session.planned_seconds, now) : 0
   const due = session !== null && remaining <= 0
-  const stale = session !== null && now > startMs + session.planned_seconds * 1000 + STALE_GRACE_MS
+  const stale = session !== null && isStale(startMs, session.planned_seconds, now)
   const breakRemaining = breakEnd !== null ? Math.ceil((breakEnd - now) / 1000) : 0
   const onBreak = breakEnd !== null && breakRemaining > 0
 
@@ -130,6 +131,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const row = await rpcEndSession(target.id, 'completed')
+        setUnverified(row.status !== 'completed')
         setResult(row)
         refresh()
         void rpcAwardMilestones().finally(() => {
@@ -164,6 +166,30 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
       setBreakOver(true)
     }
   }, [breakEnd, breakRemaining])
+
+  // Tell the server the page is open. It only counts time it can see these beats for,
+  // and only a session with enough of them completes. Failures (offline, session
+  // already ended) are ignored: the next beat or the final call settles it.
+  useEffect(() => {
+    if (!session || stale) return
+    const id = session.id
+    const beat = () => {
+      rpcHeartbeat(id).catch(() => {
+        // Nothing useful to do from here.
+      })
+    }
+    beat()
+    const timer = window.setInterval(beat, HEARTBEAT_MS)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') beat()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, stale])
 
   // Leaving the tab is a distraction. Log it once on the way out and once on the way back.
   useEffect(() => {
@@ -212,6 +238,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
     setBusy(true)
     setError(null)
     setResult(null)
+    setUnverified(false)
     setBreakEnd(null)
     setBreakOver(false)
     completing.current = null
@@ -231,6 +258,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
     try {
       const row = await rpcEndSession(session.id, 'abandoned')
       setConfirmingGiveUp(false)
+      setUnverified(false)
       setResult(row)
     } catch (err) {
       setError(messageOf(err, 'Could not end the session.'))
@@ -276,14 +304,15 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
         <div className="home-copy">
           <h2>Last session was left running</h2>
           <p className="muted">
-            It ran past its planned end with no sign you were there, so it won't count toward your totals.
+            It ran past its planned end. Only the time the server could verify you were here counts toward
+            your totals.
           </p>
           {controls('Start a new session')}
           {error ? <p className="form-error" role="alert">{error}</p> : null}
         </div>
         <Ring className="home-ring" progress={0}>
           <span className="ring-time">--:--</span>
-          <span className="ring-caption">not counted</span>
+          <span className="ring-caption">left running</span>
         </Ring>
       </div>
     )
@@ -380,6 +409,12 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
                 : ', no distractions'}
               . Timed by the server.
             </p>
+            {unverified ? (
+              <p className="muted">
+                The timer ran out, but this page wasn't open for enough of it, so it counts as ended early
+                and only the verified time was kept.
+              </p>
+            ) : null}
             {result.status === 'completed' ? (
               <div className="actions">
                 <button type="button" className="btn btn-outline" onClick={onStartBreak}>

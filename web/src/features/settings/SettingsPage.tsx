@@ -1,13 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { TagsSection } from '../tags/TagsSection'
 import {
   deleteMyAccount,
   useProfile,
   useSaveProfile,
   useSaveSettings,
   useSettings,
+  useTimeZones,
 } from './queries'
+import { timeZoneOptions } from '../../lib/timezone'
 import type { Profile, UserSettings } from '../../lib/types'
 
 export function SettingsPage() {
@@ -15,6 +18,7 @@ export function SettingsPage() {
   const userId = user!.id // RequireAuth guarantees a user here
   const profile = useProfile(userId)
   const settings = useSettings(userId)
+  const zones = useTimeZones()
 
   if (profile.isPending || settings.isPending) {
     return <p className="muted" aria-busy="true">Loading your settings…</p>
@@ -35,18 +39,12 @@ export function SettingsPage() {
         email={user?.email ?? ''}
         profile={profile.data}
         settings={settings.data}
+        zones={zones.data ?? []}
       />
+      <TagsSection userId={userId} />
       <DeleteAccount />
     </div>
   )
-}
-
-function timeZones(current: string): string[] {
-  const list = typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : []
-  const set = new Set(list)
-  set.add('UTC')
-  set.add(current)
-  return [...set].sort()
 }
 
 function SettingsForm(props: {
@@ -54,8 +52,10 @@ function SettingsForm(props: {
   email: string
   profile: Profile
   settings: UserSettings
+  /** Time zones the server accepts. May be empty while loading. */
+  zones: string[]
 }) {
-  const { userId, email, profile, settings } = props
+  const { userId, email, profile, settings, zones } = props
   const saveProfile = useSaveProfile(userId)
   const saveSettings = useSaveSettings(userId)
 
@@ -112,7 +112,7 @@ function SettingsForm(props: {
         <div className="field">
           <label htmlFor="timezone">Time zone</label>
           <select id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-            {timeZones(profile.timezone).map((tz) => (
+            {timeZoneOptions(zones, profile.timezone).map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
               </option>
