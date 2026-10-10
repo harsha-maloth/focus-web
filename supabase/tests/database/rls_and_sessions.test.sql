@@ -3,7 +3,7 @@
 create extension if not exists pgtap with schema extensions;
 
 begin;
-select plan(23);
+select plan(19);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -92,19 +92,6 @@ select lives_ok(
   $$update public.profiles set timezone_confirmed = true
      where id = '11111111-1111-1111-1111-111111111111'$$,
   'a user can confirm their own timezone');
-
--- Stats and milestones ----------------------------------------------------------
-select is(jsonb_array_length(public.my_stats() -> 'daily'), 30, 'stats cover the last 30 days');
-
-select is((public.my_stats() ->> 'current_streak')::int, 0,
-  'abandoned sessions do not make a streak');
-
-select lives_ok($$select public.award_milestones()$$, 'milestones can be awarded');
-
-select throws_ok(
-  $$insert into public.milestones (user_id, type, value)
-    values ('11111111-1111-1111-1111-111111111111', 'sessions', 1)$$,
-  '42501', null, 'clients cannot insert milestones directly');
 
 -- Act as user B ----------------------------------------------------------------
 select set_config('request.jwt.claims',

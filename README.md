@@ -6,14 +6,14 @@ A web page can't see or block other apps. This is a timer and tracker, not a blo
 
 ## Status
 
-Phases 0 to 3 are written: scaffold, deploy workflow, database migrations, email-link and Google sign-in, protected routes, profile and timer-default settings, and the focus timer (server-timed sessions, distraction logging on tab leave, recent sessions list, tags, a client-side break timer), and Phase 3 stats (daily, weekly and monthly totals, week comparison, 30-day chart, tag breakdown, streaks, milestones, all computed in Postgres). Zen mode, PWA and the community come later.
+Phases 0 and 1 are written: project scaffold, deploy workflow, first database migration, email-link and Google sign-in, protected routes, profile and timer-default settings. The timer itself is Phase 2.
 
 ## Layout
 
 ```
 web/                 Vite + React + TypeScript app
 supabase/
-  migrations/        versioned SQL (0001_init.sql, 0002_tz_confirmed_and_stale_sessions.sql, 0003_stats.sql)
+  migrations/        versioned SQL (0001_init.sql, 0002_tz_confirmed_and_stale_sessions.sql)
   tests/database/    pgTAP tests (row isolation, session rules)
 .github/workflows/   build and deploy to GitHub Pages
 ```

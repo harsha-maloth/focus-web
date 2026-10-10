@@ -7,7 +7,6 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { RequireAuth } from '../features/auth/RequireAuth'
 import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
-import { StatsPage } from '../features/stats/StatsPage'
 import { isConfigured } from '../lib/supabase'
 
 const queryClient = new QueryClient({
@@ -27,7 +26,6 @@ export function App() {
             <Route element={<RequireAuth />}>
               <Route element={<Shell />}>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/stats" element={<StatsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>
