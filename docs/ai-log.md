@@ -291,3 +291,7 @@ Goal: user asked to use Digital Wellbeing data. Not readable by apps; switched t
 ### Session 12: 2026-10-10
 Goal: Android step 3, focus timer. Done: Focus tab, Room 5, session blocking in `BlockerService`, `SessionMath`, D32. Not compiled or run. Open: push and read CI; test on the phone (start 15 min, open a non-allowed app, End early); then notification and end sound, reboot recovery (step 4).
 
+
+### Session 13: 2026-10-10
+Goal: usage still wrong; find a more accurate source than Digital Wellbeing or the system log. Done: live counting in the accessibility service (D33), Room 6, "Check" diagnostics line. Web search for known issues found only forum notes that the event log is messy (missing start events, overlapping apps); no official fix. Not compiled or run. Open: push; switch on accessibility; use the phone for a while; compare Focus's live number with the "Check" line and the phone's own screen-time screen; send me the three numbers if live still looks off.
+

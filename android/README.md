@@ -5,6 +5,7 @@ Clean-room: written independently, nothing taken from any reference app (D2).
 
 ## What it does so far (version 0.1.0)
 - Asks for **Usage access** (Settings, Special access), then lists screen time per app.
+- **Live counting:** once the accessibility service is on, Focus counts foreground time itself (which app is in front, minus screen off, home screen, keyboard and system windows) and stores it per day on the phone. Days with live data say "Counted live by Focus"; older days say "System estimate". The Usage tab also prints a "Check" line comparing the system's totals, the event log and the day so far, so a wrong source is easy to spot.
 - Shows the last 7 days as bars; tap a day to see its apps. Each day is saved on the phone in a Room database (D28), so history outlives the system's short event log.
 - **Focus tab:** pick 15, 25, 45, 60 or 90 min and start a session. While it runs, every app except Focus, the phone app, the keyboard, the home screen and the apps on your "Allowed during a session" list is blocked with a "Stay focused" page. The timer finishes by itself; "End early" asks first and saves the time so far. Recent sessions are listed. Uses the same accessibility switch as limits.
 - **Limits tab:** pick an app and a daily limit (15 to 120 min). An accessibility service watches which app comes to the front; once today's use reaches the limit, a full-screen "Time's up" page opens over it (Back or "Go home" returns to the launcher). It resets at midnight.
@@ -48,8 +49,8 @@ android/
     MainActivity.kt
     ui/       Theme, Format, HomeScreen
     limits/   LimitMath, SessionMath (pure, tested), SystemPackages, BlockerService (accessibility), BlockActivity, InstalledApps, AccessibilityStatus
-    usage/    UsageAggregator, WeekMath (pure, tested), UsageRepository (system calls), UsageSync
-    data/     FocusDb (Room: daily_usage, app_limit, focus_session, allowed_app)
+    usage/    LiveTracker (pure, tested), LivePrefs, UsageAggregator, WeekMath (pure, tested), UsageRepository (system calls), UsageSync
+    data/     FocusDb (Room: daily_usage, live_usage, app_limit, focus_session, allowed_app)
   app/src/test/...                JUnit tests for the pure parts
 ```
 

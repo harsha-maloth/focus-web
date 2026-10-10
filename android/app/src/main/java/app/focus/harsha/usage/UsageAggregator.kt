@@ -78,4 +78,17 @@ object UsageAggregator {
         }
         return totals
     }
+
+    /** The app still in front after the last event, or null. Used to recover after unlock. */
+    fun openAt(events: List<RawEvent>): String? {
+        var current: String? = null
+        for (e in events.sortedBy { it.timeMs }) {
+            when (e.type) {
+                RESUMED -> current = e.pkg
+                PAUSED -> if (current == e.pkg) current = null
+                SCREEN_OFF, KEYGUARD_SHOWN, SHUTDOWN -> current = null
+            }
+        }
+        return current
+    }
 }

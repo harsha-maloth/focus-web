@@ -35,6 +35,27 @@ data class FocusSessionEntity(
 @Entity(tableName = "allowed_app")
 data class AllowedAppEntity(@androidx.room.PrimaryKey val pkg: String, val label: String)
 
+/** Foreground time counted live by the accessibility service, per day and app. */
+@Entity(tableName = "live_usage", primaryKeys = ["date", "pkg"])
+data class LiveUsageEntity(val date: String, val pkg: String, val label: String, val ms: Long)
+
+@Dao
+abstract class LiveUsageDao {
+    @Query("UPDATE live_usage SET ms = ms + :ms, label = :label WHERE date = :date AND pkg = :pkg")
+    abstract suspend fun addTo(date: String, pkg: String, label: String, ms: Long): Int
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun insert(row: LiveUsageEntity): Long
+
+    @Transaction
+    open suspend fun add(date: String, pkg: String, label: String, ms: Long) {
+        if (addTo(date, pkg, label, ms) == 0) insert(LiveUsageEntity(date, pkg, label, ms))
+    }
+
+    @Query("SELECT * FROM live_usage WHERE date BETWEEN :from AND :to ORDER BY date, ms DESC")
+    abstract suspend fun range(from: String, to: String): List<LiveUsageEntity>
+}
+
 @Dao
 abstract class FocusSessionDao {
     @Insert
@@ -92,12 +113,13 @@ abstract class DailyUsageDao {
     }
 }
 
-@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class, FocusSessionEntity::class, AllowedAppEntity::class], version = 5, exportSchema = false)
+@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class, FocusSessionEntity::class, AllowedAppEntity::class, LiveUsageEntity::class], version = 6, exportSchema = false)
 abstract class FocusDb : RoomDatabase() {
     abstract fun usage(): DailyUsageDao
     abstract fun limits(): AppLimitDao
     abstract fun sessions(): FocusSessionDao
     abstract fun allowed(): AllowedAppDao
+    abstract fun live(): LiveUsageDao
 
     companion object {
         @Volatile private var instance: FocusDb? = null
@@ -110,6 +132,13 @@ abstract class FocusDb : RoomDatabase() {
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM `daily_usage`")
+            }
+        }
+
+        /** 5 to 6: adds live_usage (the app's own foreground counting). Everything else is kept. */
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `live_usage` (`date` TEXT NOT NULL, `pkg` TEXT NOT NULL, `label` TEXT NOT NULL, `ms` INTEGER NOT NULL, PRIMARY KEY(`date`, `pkg`))")
             }
         }
 
@@ -138,7 +167,7 @@ abstract class FocusDb : RoomDatabase() {
         fun get(context: Context): FocusDb =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, FocusDb::class.java, "focus.db")
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
                     .also { instance = it }
             }

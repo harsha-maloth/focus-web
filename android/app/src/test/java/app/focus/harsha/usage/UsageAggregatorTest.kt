@@ -129,4 +129,19 @@ class UsageAggregatorTest {
         val r = UsageAggregator.fromBuckets(listOf(RawBucket("a", 0, 999_999_999)), 0, 10_000)
         assertEquals(10_000L, r["a"])
     }
+
+    @Test
+    fun openAtReturnsTheAppStillInFront() {
+        val events = listOf(
+            ev("a", "A", resumed, 0), ev("a", "A", paused, 10_000),
+            ev("b", "B", resumed, 10_000),
+        )
+        assertEquals("b", UsageAggregator.openAt(events))
+    }
+
+    @Test
+    fun openAtIsNullAfterScreenOff() {
+        val events = listOf(ev("a", "A", resumed, 0), ev("", "", UsageAggregator.SCREEN_OFF, 5_000))
+        assertEquals(null, UsageAggregator.openAt(events))
+    }
 }

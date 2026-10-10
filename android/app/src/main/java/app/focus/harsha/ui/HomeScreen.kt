@@ -69,6 +69,7 @@ fun HomeScreen() {
     var hasAccess by remember { mutableStateOf(UsageRepository.hasAccess(context)) }
     var refresh by remember { mutableIntStateOf(0) }
     var state by remember { mutableStateOf<UsageState>(UsageState.Loading) }
+    var diag by remember { mutableStateOf<String?>(null) }
     var selected by remember { mutableStateOf(LocalDate.now(ZoneId.systemDefault())) }
 
     // Coming back from the Settings screen: check the permission again and reload.
@@ -89,6 +90,20 @@ fun HomeScreen() {
         }
     }
 
+    LaunchedEffect(selected, hasAccess, refresh) {
+        if (!hasAccess) return@LaunchedEffect
+        diag = try {
+            withContext(Dispatchers.IO) {
+                val d = UsageRepository.diagnose(context, selected)
+                "System totals " + formatDuration(d.bucketsMs) +
+                    " · Event log " + formatDuration(d.eventsMs) +
+                    " · Day so far " + formatDuration(d.windowMs)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     val week = (state as? UsageState.Ready)?.week
     val summary = week?.get(selected)
     val today = LocalDate.now(ZoneId.systemDefault())
@@ -102,10 +117,19 @@ fun HomeScreen() {
         Header(
             title = title,
             totalText = summary?.let { formatDuration(it.totalMs) },
+            sourceText = summary?.let { if (it.live) "Counted live by Focus" else "System estimate" },
             averageText = week?.let { w -> "Daily average " + formatDuration(WeekMath.averageMs(w.values.map { it.totalMs })) },
         )
         if (week != null) {
             WeekStrip(week, selected, today) { selected = it }
+        }
+        diag?.let {
+            Text(
+                "Check: $it",
+                modifier = Modifier.padding(horizontal = 16.dp),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         when (val s = state) {
@@ -175,7 +199,7 @@ private fun WeekStrip(week: Map<LocalDate, UsageSummary>, selected: LocalDate, t
 }
 
 @Composable
-private fun Header(title: String, totalText: String?, averageText: String?) {
+private fun Header(title: String, totalText: String?, sourceText: String?, averageText: String?) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -191,6 +215,9 @@ private fun Header(title: String, totalText: String?, averageText: String?) {
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
             )
+            if (sourceText != null) {
+                Text(sourceText, color = Color(0xFFCFE6E9), fontSize = 13.sp)
+            }
             if (averageText != null) {
                 Text(averageText, color = Color(0xFFCFE6E9), fontSize = 13.sp)
             }

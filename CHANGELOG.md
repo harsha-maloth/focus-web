@@ -2,6 +2,13 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 13: count usage ourselves (written, not compiled)
+- Usage was still wrong on the user's tablet with both system sources. New primary source: `BlockerService` counts foreground time live through `LiveTracker` (pure, 6 tests): one app in front, screen off and home screen are idle, keyboards, System UI and system dialogs are ignored, a screen-off receiver and an unlock recovery (`UsageAggregator.openAt`, `UsageRepository.lastForeground`), 30 s ticks, and every credit capped at 90 s so totals cannot run away.
+- Room 6 with `Migration(5, 6)`: table `live_usage` (date, pkg, label, ms), `LiveUsageDao`. `LivePrefs` remembers when live counting started.
+- `UsageSync.loadWeek` prefers live rows for a day (`UsageSummary.live`); the header says "Counted live by Focus" or "System estimate". Limits use live data when counting began before today's midnight.
+- Usage tab shows a "Check" line: system totals, event log and day so far (`UsageRepository.diagnose`), to see which source is off. `SystemPackages` gained `overlays()` and `homes()`.
+- Decision D33. Not run; nothing compiled or tried on a phone. Live counting starts only after the accessibility service is switched on, so today will be partial the first day.
+
 ## Session 12: focus timer (written, not compiled)
 - New Focus tab (now the first tab): length chips (15, 25, 45, 60, 90), Start, big countdown in the header, "End early" with confirm, "Allowed during a session" list (app picker reused from Limits), Recent sessions (8). Warns when the accessibility service is off.
 - Room 5 with `Migration(4, 5)`: tables `focus_session` and `allowed_app`, DAOs `FocusSessionDao` and `AllowedAppDao`. Earlier tables are kept.

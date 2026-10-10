@@ -12,7 +12,8 @@ import java.time.ZoneId
 
 data class AppUsage(val pkg: String, val label: String, val ms: Long)
 
-data class UsageSummary(val apps: List<AppUsage>, val totalMs: Long)
+/** `live` is true when the numbers were counted by this app itself, not taken from the system log. */
+data class UsageSummary(val apps: List<AppUsage>, val totalMs: Long, val live: Boolean = false)
 
 object UsageRepository {
     /** Apps used for less than this are left out of the list. */
@@ -43,22 +44,9 @@ object UsageRepository {
         val end = minOf(date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(), System.currentTimeMillis())
         if (end <= start) return UsageSummary(emptyList(), 0L)
 
-        // Preferred: the system's own daily totals (what the phone's screen time screens use).
-        val buckets = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
-            .map { RawBucket(it.packageName, it.firstTimeStamp, it.totalTimeInForeground) }
-        var totals = UsageAggregator.fromBuckets(buckets, start, end)
-
-        // Fallback for phones that return no daily totals: work it out from the event log.
-        if (totals.isEmpty()) {
-            val raw = ArrayList<RawEvent>()
-            val events = usm.queryEvents(start, end)
-            val event = UsageEvents.Event()
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-                raw.add(RawEvent(event.packageName, event.className ?: "", event.eventType, event.timeStamp))
-            }
-            totals = UsageAggregator.foregroundMs(raw, end)
-        }
+        // The system's own daily totals first; the event log only if those come back empty.
+        var totals = bucketTotals(usm, start, end)
+        if (totals.isEmpty()) totals = eventTotals(usm, start, end)
 
         val pm = context.packageManager
         val apps = totals
@@ -69,6 +57,49 @@ object UsageRepository {
             }
             .sortedByDescending { it.ms }
         return UsageSummary(apps, apps.sumOf { it.ms })
+    }
+
+    /** Three ways to count one day, side by side, to see which one a phone gets wrong. */
+    data class Diagnostics(val windowMs: Long, val bucketsMs: Long, val eventsMs: Long)
+
+    fun diagnose(context: Context, date: LocalDate): Diagnostics {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val zone = ZoneId.systemDefault()
+        val start = date.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = minOf(date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(), System.currentTimeMillis())
+        if (end <= start) return Diagnostics(0L, 0L, 0L)
+        return Diagnostics(
+            windowMs = end - start,
+            bucketsMs = bucketTotals(usm, start, end).values.sum(),
+            eventsMs = eventTotals(usm, start, end).values.sum(),
+        )
+    }
+
+    private fun bucketTotals(usm: UsageStatsManager, start: Long, end: Long): Map<String, Long> {
+        val buckets = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
+            .map { RawBucket(it.packageName, it.firstTimeStamp, it.totalTimeInForeground) }
+        return UsageAggregator.fromBuckets(buckets, start, end)
+    }
+
+    private fun readEvents(usm: UsageStatsManager, start: Long, end: Long): List<RawEvent> {
+        val raw = ArrayList<RawEvent>()
+        val events = usm.queryEvents(start, end)
+        val event = UsageEvents.Event()
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            raw.add(RawEvent(event.packageName ?: "", event.className ?: "", event.eventType, event.timeStamp))
+        }
+        return raw
+    }
+
+    private fun eventTotals(usm: UsageStatsManager, start: Long, end: Long): Map<String, Long> =
+        UsageAggregator.foregroundMs(readEvents(usm, start, end), end)
+
+    /** The app in front according to the last few minutes of the event log, or null. */
+    fun lastForeground(context: Context): String? {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val end = System.currentTimeMillis()
+        return UsageAggregator.openAt(readEvents(usm, end - 10 * 60_000L, end))
     }
 
     @Suppress("DEPRECATION")

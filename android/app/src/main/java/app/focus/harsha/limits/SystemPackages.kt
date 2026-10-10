@@ -33,4 +33,28 @@ object SystemPackages {
         }
         return out
     }
+
+    /** Windows that appear over an app without leaving it: System UI, keyboards, system dialogs. */
+    fun overlays(context: Context): Set<String> {
+        val out = HashSet<String>()
+        out += "com.android.systemui"
+        out += "android"
+        try {
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.enabledInputMethodList.forEach { out += it.packageName }
+        } catch (e: Exception) {
+        }
+        return out
+    }
+
+    /** Home screen apps (launchers). Being on the home screen is not app use. */
+    fun homes(context: Context): Set<String> {
+        val out = HashSet<String>()
+        try {
+            val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+            context.packageManager.queryIntentActivities(home, 0).forEach { out += it.activityInfo.packageName }
+        } catch (e: Exception) {
+        }
+        return out
+    }
 }

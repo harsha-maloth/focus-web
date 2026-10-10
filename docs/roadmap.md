@@ -19,7 +19,7 @@ Native Kotlin and Compose; blocks apps, which a web page cannot. Research is in 
 
 ### MVP build order
 - [~] **0. Scaffold**: written, not built. Gradle project, Kotlin, Compose, one module, CI workflow that builds the APK (D26). Hilt, Room and modules deferred
-- [~] **1. Usage stats**: written, not built. Permission flow, per-app list, 7-day strip, Room `daily_usage` (D28), tested aggregator and week maths. Still to do: longer history views, per-app trends
+- [~] **1. Usage stats**: written, not built. Permission flow, per-app list, 7-day strip, Room `daily_usage` (D28), tested aggregator and week maths. Live counting by the accessibility service (D33) is the primary source; system data is the fallback. Still to do: confirm live numbers against real use on the phone, longer history views, per-app trends
 - [~] **2. App limits**: written, not built. Limits tab (add, list, remove; Room `app_limit`), accessibility service foreground detection with a 30 s re-check, full-screen block activity (no overlay permission needed, D29). Still to do: edit a limit, per-day schedules, "5 minutes left" warning, restricted-settings walkthrough screen
 - [~] **3. Focus timer**: written, not built. Focus tab (presets, countdown, end early with confirm, recent sessions), Room `focus_session` and `allowed_app`, blocking of non-allowed apps by the same accessibility service (D32). Still to do: notification and end sound, notification permission, server-time or tamper checks, stats per day
 - [ ] **4. Reliability**: boot receiver, watchdog worker, time-change handling, OEM battery guidance
