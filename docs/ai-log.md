@@ -223,3 +223,32 @@ Left: Poppins files, deploy and walk the whole phone flow by hand (login, timer,
 ### Session 5f (same day)
 Done: Poppins wiring with graceful fallback (D24). The font files are still to be added by the user. Not verified: nothing run or seen.
 Left: add the font files; deploy; hand-walk the phone flow; fix what that finds. The planned UI phases (1 to 4) are all written.
+
+
+---
+
+## Session 6: 2026-10-10
+
+### Goal
+Read the whole Phase 4e zip, then plan a full UI/UX change.
+
+### Done
+Read all docs, migrations, tests and app code (nothing executed). Proposed a 6-step redesign; the user chose "bold and app-like". Wrote D25, `web-plan.md` section 14, a roadmap row, and fixed two stale doc references. Docs only, no code.
+
+### Noticed, not fixed
+Service worker cache name never bumps and non-hashed files are cache-first; docs `architecture.md`, `web-plan.md` sections 9 and 13 and the earlier context block still describe the pre-Phase-4 state; `ops-log.md` Google provider row has a `?` date; Stats "By tag" heading does not say it covers 30 days.
+
+### Not verified
+Nothing run. Sessions 5 to 5f UI still unseen in a browser.
+
+### Open items
+1. Add Poppins files, deploy, hand-walk the current UI (redesign step 0).
+2. Then redesign step 1 onwards (`web-plan.md` section 14).
+3. Earlier open items (Settings save, pgTAP, Google sign-in) still stand.
+
+### Context block addition
+Phase 4 and the Session 5 restyle are written (Phase 4 deployed, restyle unseen). A bold, app-like UI/UX redesign is planned (D25); no code changed yet.
+
+
+### Session 6b (same day)
+Started UI v2 step 2 (flows): the start sheet with presets and tag chips (see `CHANGELOG.md`, Session 6b). Not verified: nothing run or seen; only a syntax-level tsc pass. Left: result screen, running view as the zen look, History inside Stats, onboarding, shared components, the rest of the screens. Redesign step 0 (hand walk of the current build, Poppins files) still needs the user's phone.

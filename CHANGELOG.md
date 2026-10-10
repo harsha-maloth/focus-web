@@ -2,6 +2,17 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 6b: start flow (UI v2, written, not run)
+- Home: one big Start button plus a summary pill ("25 min · No tag"). Tapping the pill opens a sheet (`BottomSheet`) with minute presets 15, 25, 45, 60 or Custom, and tag chips (No tag plus each tag). The sheet has its own Start button. Files: `features/timer/TimerPanel.tsx` (`StartControls`, new `StartSheetBody`), `index.css` (`.start`, `.start-summary`, `.btn-lg`, `.chip-tag`).
+- The stale-session view uses the same controls. The inline validation and tag hint on the idle view moved into the sheet.
+- Not run: typecheck, vitest, build (no node_modules or network here). Only a syntax-level `tsc` pass on `TimerPanel.tsx` was clean. Not seen in a browser.
+- Check: sheet opens and closes, a preset sets the length, Custom shows the number field, tag choice is remembered, Start closes the sheet and starts a session, focus returns to the pill.
+
+## Session 6: UI/UX redesign plan (docs only)
+- User chose "bold and app-like". Recorded as D25 (extends D23). Plan added as `docs/web-plan.md` section 14 and a "UI v2" row in `docs/roadmap.md`.
+- Fixed stale doc references: next decision number in `AGENTS.md` (now D26), decision range in `docs/README.md` (D1 to D25).
+- No code changed. Nothing run.
+
 ## Session 5f: Poppins wiring (written, not run; font files still missing)
 - `web/public/fonts/fonts.css` (Poppins 600 and 700, swap, local() then url()), linked from `index.html`; `README.txt` lists the files to add and the OFL licence note. `--font-display` added; applied to headings, buttons, chips, stat values and the ring time. `--font` no longer lists Bricolage Grotesque (never loaded since D22).
 - The two `.woff2` files are NOT in the repo: add `Poppins-SemiBold.woff2` and `Poppins-Bold.woff2` (and `OFL.txt`) to `web/public/fonts/`. Until then the system font is used.

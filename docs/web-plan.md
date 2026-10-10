@@ -243,3 +243,16 @@ Implementation notes for Phases 0 and 1 are in the `focus-web` repo (`README.md`
 - **Routes built:** `/`, `/stats`, `/settings`, `/login`. `/history` and `/groups` are not built; the timer lives on the home page.
 - **Stack as built:** React 19, React Router 7 (hash), TanStack Query 5, Supabase JS 2, Vite 7, Vitest 3, TypeScript 5.8. Plain CSS and a hand-drawn SVG chart (no Tailwind, no chart library). No PWA plugin yet.
 - **Deploy:** one GitHub Actions workflow: `npm ci`, typecheck, test, build, deploy to Pages. Vite `base` follows the repository name.
+
+## 14. UI/UX redesign plan (D25, 2026-10-10, not started)
+
+Direction: bold and app-like. Ship one step at a time and hand-check each deploy.
+
+- [ ] **0. Audit:** deploy the current build, walk it on a phone, list what feels wrong per screen. Add the Poppins files first.
+- [ ] **1. Direction:** tokens locked (see D25); type scale, spacing and motion written down.
+- [ ] **2. Flows:** Home as timer; start sheet with presets and tag chips (written 6b, not run); zen look as the default running view; result screen; History inside Stats; 3-step onboarding.
+- [ ] **3. Components:** button, chip, card, sheet, list row, empty, error and skeleton states; split `index.css` by component.
+- [ ] **4. Screens, in order:** Home and running timer, result screen, Stats, History, Settings (grouped sub-pages), Login.
+- [ ] **5. Polish:** light and dark, reduced motion, 360 px width, safe areas, installed PWA, keyboard and screen reader, touch targets.
+
+Risks: Phase 5 (social) is delayed; every unverified batch makes bugs harder to trace, so one screen per deploy.

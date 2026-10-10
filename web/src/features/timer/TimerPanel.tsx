@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { BottomSheet } from '../../components/BottomSheet'
 import { Ring } from '../../components/Ring'
 import { useSnackbar } from '../../components/Snackbar'
 import { playEndSound, startAmbient, unlockAudio, type Ambient, type EndSound } from '../../lib/audio'
@@ -57,35 +58,121 @@ type StartControlsProps = {
   label: string
 }
 
+const PRESETS = [15, 25, 45, 60]
+
+/**
+ * One big Start button. It opens a sheet with minute presets (or a custom value) and tag chips,
+ * so the Home screen stays the timer. Settings (D25): the sheet mounts only while open, so
+ * its "custom" state starts fresh each time from the current minutes.
+ */
 function StartControls(p: StartControlsProps) {
+  const [open, setOpen] = useState(false)
+  const current = Number(p.minutes)
+  const selectedTag = p.tags.find((t) => t.id === p.tagId)
+
   return (
-    <div className="actions">
-      <label className="timer-minutes">
-        <span>Minutes</span>
-        <input
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={240}
-          value={p.minutes}
-          onChange={(e) => p.onMinutes(e.target.value)}
-          aria-invalid={!p.valid}
-        />
-      </label>
+    <div className="start">
+      <button type="button" className="start-summary" onClick={() => setOpen(true)} aria-haspopup="dialog">
+        <span>{p.valid ? `${current} min` : 'Set length'}</span>
+        <span className="start-summary-sep" aria-hidden="true">·</span>
+        <span>{selectedTag ? selectedTag.name : 'No tag'}</span>
+        <span className="start-summary-edit">Change</span>
+      </button>
+      <button
+        type="button"
+        className="btn btn-primary btn-lg"
+        onClick={() => (p.valid ? p.onStart() : setOpen(true))}
+        disabled={p.busy}
+      >
+        {p.label}
+      </button>
+
+      <BottomSheet open={open} onClose={() => setOpen(false)} title="Start a session">
+        {open ? (
+          <StartSheetBody
+            {...p}
+            onStartNow={() => {
+              setOpen(false)
+              p.onStart()
+            }}
+          />
+        ) : null}
+      </BottomSheet>
+    </div>
+  )
+}
+
+function StartSheetBody(p: StartControlsProps & { onStartNow: () => void }) {
+  const current = Number(p.minutes)
+  const [custom, setCustom] = useState(() => !PRESETS.includes(current))
+
+  return (
+    <div className="stack">
+      <div className="field">
+        <span id="start-length-label" className="field-label">Length</span>
+        <div className="chips" role="group" aria-labelledby="start-length-label">
+          {PRESETS.map((n) => (
+            <button
+              key={n}
+              type="button"
+              className="chip"
+              aria-pressed={!custom && current === n}
+              onClick={() => {
+                setCustom(false)
+                p.onMinutes(String(n))
+              }}
+            >
+              {n} min
+            </button>
+          ))}
+          <button type="button" className="chip" aria-pressed={custom} onClick={() => setCustom(true)}>
+            Custom
+          </button>
+        </div>
+        {custom ? (
+          <label className="timer-minutes">
+            <span>Minutes (1 to 240)</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={240}
+              value={p.minutes}
+              onChange={(e) => p.onMinutes(e.target.value)}
+              aria-invalid={!p.valid}
+            />
+          </label>
+        ) : null}
+      </div>
+
       {p.tags.length > 0 ? (
-        <label className="timer-tag">
-          <span>Tag</span>
-          <select value={p.tagId} onChange={(e) => p.onTag(e.target.value)}>
-            <option value="">No tag</option>
+        <div className="field">
+          <span id="start-tag-label" className="field-label">Tag</span>
+          <div className="chips" role="group" aria-labelledby="start-tag-label">
+            <button type="button" className="chip" aria-pressed={p.tagId === ''} onClick={() => p.onTag('')}>
+              No tag
+            </button>
             {p.tags.map((t) => (
-              <option key={t.id} value={t.id}>
+              <button
+                key={t.id}
+                type="button"
+                className="chip chip-tag"
+                aria-pressed={p.tagId === t.id}
+                onClick={() => p.onTag(t.id)}
+              >
+                <span className="tag-dot" style={{ background: t.color }} aria-hidden="true" />
                 {t.name}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
-      ) : null}
-      <button type="button" className="btn btn-primary" onClick={p.onStart} disabled={p.busy || !p.valid}>
+          </div>
+        </div>
+      ) : (
+        <p className="hint">Add tags in Settings to group your sessions.</p>
+      )}
+
+      {!p.valid ? <p className="form-error" role="alert">Choose 1 to 240 minutes.</p> : null}
+
+      <button type="button" className="btn btn-primary btn-lg" onClick={p.onStartNow} disabled={p.busy || !p.valid}>
         {p.label}
       </button>
     </div>
@@ -533,12 +620,6 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
         )}
         {result && breakOver ? <p className="muted">Break over. Ready for the next session?</p> : null}
         {controls(result || breakOver ? 'Start another' : 'Start focus')}
-        {!minutesValid ? (
-          <p className="form-error" role="alert">Choose 1–240 minutes.</p>
-        ) : null}
-        {tagsQuery.isSuccess && tags.length === 0 ? (
-          <p className="hint">Add tags in Settings to group your sessions.</p>
-        ) : null}
         {error ? <p className="form-error" role="alert">{error}</p> : null}
       </div>
       <Ring className="home-ring" progress={1}>
