@@ -28,7 +28,8 @@ export function useSettings(userId: string) {
   })
 }
 
-export type ProfileChanges = Pick<Profile, 'display_name' | 'timezone'>
+export type ProfileChanges = Pick<Profile, 'display_name' | 'timezone'> &
+  Partial<Pick<Profile, 'timezone_confirmed'>>
 export type SettingsChanges = Pick<UserSettings, 'default_minutes' | 'break_minutes'>
 
 export function useSaveProfile(userId: string) {

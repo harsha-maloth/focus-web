@@ -9,15 +9,18 @@ export function Shell() {
   const profile = useProfile(userId)
   const saveProfile = useSaveProfile(userId)
 
-  // New accounts start on UTC. Set the browser's zone once so daily totals line up.
+  // New accounts start on UTC, unconfirmed. Set the browser's zone once, then mark
+  // it confirmed so a later deliberate choice (even UTC) is never overwritten.
   const { data, isSuccess } = profile
   const { mutate } = saveProfile
   useEffect(() => {
-    if (!isSuccess || data.timezone !== 'UTC') return
+    if (!isSuccess || data.timezone_confirmed) return
     const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (browserZone && browserZone !== 'UTC') {
-      mutate({ display_name: data.display_name, timezone: browserZone })
-    }
+    mutate({
+      display_name: data.display_name,
+      timezone: browserZone || data.timezone,
+      timezone_confirmed: true,
+    })
   }, [isSuccess, data, mutate])
 
   return (

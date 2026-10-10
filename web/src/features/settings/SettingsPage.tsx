@@ -77,7 +77,11 @@ function SettingsForm(props: {
     setMessage(null)
     try {
       await Promise.all([
-        saveProfile.mutateAsync({ display_name: name.trim().slice(0, 40), timezone }),
+        saveProfile.mutateAsync({
+          display_name: name.trim().slice(0, 40),
+          timezone,
+          timezone_confirmed: true,
+        }),
         saveSettings.mutateAsync({ default_minutes: focus, break_minutes: rest }),
       ])
       setMessage({ ok: true, text: 'Saved.' })

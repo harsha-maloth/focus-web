@@ -6,14 +6,14 @@ A web page can't see or block other apps. This is a timer and tracker, not a blo
 
 ## Status
 
-Phases 0 and 1 are written: project scaffold, deploy workflow, first database migration, email-link and Google sign-in, protected routes, profile and timer-default settings. The timer itself is Phase 2.
+Phases 0 to 2 are written: scaffold, deploy workflow, database migrations, email-link and Google sign-in, protected routes, profile and timer-default settings, and the focus timer (server-timed sessions, distraction logging on tab leave, recent sessions list). Tags, stats and the community come later.
 
 ## Layout
 
 ```
 web/                 Vite + React + TypeScript app
 supabase/
-  migrations/        versioned SQL (0001_init.sql)
+  migrations/        versioned SQL (0001_init.sql, 0002_tz_confirmed_and_stale_sessions.sql)
   tests/database/    pgTAP tests (row isolation, session rules)
 .github/workflows/   build and deploy to GitHub Pages
 ```
@@ -22,7 +22,7 @@ supabase/
 
 ### 1. Supabase project
 1. Create a project at supabase.com.
-2. Apply the schema. Either paste `supabase/migrations/0001_init.sql` into the SQL editor and run it, or use the CLI:
+2. Apply the schema. Either paste each file in `supabase/migrations/` (in order) into the SQL editor and run it, or use the CLI:
    `supabase link --project-ref <ref>` then `supabase db push`.
 3. Project Settings > API: copy the **Project URL** and the **anon** (or publishable) key. Never use the `service_role` key anywhere in this repo.
 

@@ -3,7 +3,7 @@
 create extension if not exists pgtap with schema extensions;
 
 begin;
-select plan(16);
+select plan(19);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -67,6 +67,31 @@ select lives_ok(
 select is(
   (select distraction_count from public.focus_sessions where id = current_setting('app.sid')::uuid),
   1, 'a blur event raises the distraction count');
+
+-- Stale sessions earn nothing -------------------------------------------------
+reset role;
+update public.focus_sessions set started_at = now() - interval '2 hours'
+ where id = current_setting('app.sid')::uuid;
+set local role authenticated;
+
+select lives_ok($$select public.start_session(null, 600)$$,
+  'a stale running session no longer blocks a new one');
+
+select ok(
+  (select status = 'abandoned' and focused_seconds = 0
+     from public.focus_sessions where id = current_setting('app.sid')::uuid),
+  'a stale session is abandoned with zero focused time');
+
+-- Timezone flag ------------------------------------------------------------------
+select is(
+  (select timezone_confirmed from public.profiles
+    where id = '11111111-1111-1111-1111-111111111111'),
+  false, 'timezone starts unconfirmed');
+
+select lives_ok(
+  $$update public.profiles set timezone_confirmed = true
+     where id = '11111111-1111-1111-1111-111111111111'$$,
+  'a user can confirm their own timezone');
 
 -- Act as user B ----------------------------------------------------------------
 select set_config('request.jwt.claims',
