@@ -1,0 +1,2 @@
+-- Intentionally empty. For local development, sign in through the local Auth
+-- emulator: magic-link emails appear in Inbucket at http://127.0.0.1:54324.
