@@ -6,6 +6,7 @@ import type { FocusSession, Tag } from '../../lib/types'
 import { TagChip } from '../tags/TagChip'
 import { useTags } from '../tags/queries'
 import {
+  rpcAwardMilestones,
   rpcEndSession,
   rpcLogEvent,
   rpcStartSession,
@@ -118,6 +119,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ['running-session', userId] })
     void queryClient.invalidateQueries({ queryKey: ['recent-sessions', userId] })
+    void queryClient.invalidateQueries({ queryKey: ['stats', userId] })
   }
 
   // The server only accepts "completed" once the planned time has really passed
@@ -130,6 +132,9 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes }: TimerPanelP
         const row = await rpcEndSession(target.id, 'completed')
         setResult(row)
         refresh()
+        void rpcAwardMilestones().finally(() => {
+          void queryClient.invalidateQueries({ queryKey: ['stats', userId] })
+        })
         return
       } catch (err) {
         const message = messageOf(err, 'Could not finish the session.')

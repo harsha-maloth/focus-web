@@ -34,6 +34,7 @@ export function Shell() {
           <NavLink to="/" end>
             Home
           </NavLink>
+          <NavLink to="/stats">Stats</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>
         <button type="button" className="btn btn-quiet" onClick={() => void signOut()}>

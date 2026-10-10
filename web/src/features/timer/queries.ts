@@ -87,3 +87,8 @@ export async function rpcLogEvent(sessionId: string, type: 'blur' | 'focus'): Pr
   })
   if (error) throw new Error(error.message)
 }
+
+/** Awards milestones the new session may have earned. Failure is harmless: Stats retries. */
+export async function rpcAwardMilestones(): Promise<void> {
+  await supabase.rpc('award_milestones')
+}
