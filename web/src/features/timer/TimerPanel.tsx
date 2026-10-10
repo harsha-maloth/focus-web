@@ -444,7 +444,7 @@ export function TimerPanel({ userId, defaultMinutes, breakMinutes, sound, ambien
                   {ambient !== 'off' ? ` Ambient: ${ambient} noise.` : ''}
                 </p>
                 <div className="actions">
-                  {!isFullscreen && document.documentElement.requestFullscreen ? (
+                  {!isFullscreen && document.fullscreenEnabled ? (
                     <button type="button" className="btn btn-outline" onClick={enterFullscreen}>
                       Full screen
                     </button>

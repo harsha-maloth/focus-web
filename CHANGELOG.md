@@ -3,6 +3,7 @@
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
 ## Session 4b: Phase 4 (written, not run)
+- CI typecheck failed on `TimerPanel.tsx` (TS2774: `requestFullscreen` is always defined). The Full screen button now checks `document.fullscreenEnabled`. Not run; the next deploy will show.
 - The installed PWA now opens full screen: manifest `display` is `fullscreen` (falls back to `standalone`), with safe-area padding on the top bar and page bottom so nothing sits under the notch or gesture bar. An already installed copy must be removed and installed again to pick up the manifest change. Not run or seen.
 - Zen mode now always covers the whole window (100dvh, safe-area padding, page scroll locked) and stays open if the browser leaves full screen; a Full screen button re-enters it. Escape no longer closes zen; Exit zen does. The page, zen view and browser theme colour (`theme-color`, light and dark, and the manifest) all use the app background, so the top and bottom bars match. Not run or seen.
 - Session 4 fixes were pushed (commit 85690f9) and the user reports the site works after the deploy; exact checks not itemised.
