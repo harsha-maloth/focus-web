@@ -64,4 +64,47 @@ class UsageAggregatorTest {
         )
         assertTrue(r.isEmpty())
     }
+
+    @Test
+    fun unclosedActivitiesDoNotStack() {
+        // a opens two activities and never pauses them; b then takes over. a must stop at 10_000.
+        val r = UsageAggregator.foregroundMs(
+            listOf(
+                ev("a", "A", resumed, 0), ev("a", "B", resumed, 5_000),
+                ev("b", "X", resumed, 10_000), ev("b", "X", paused, 40_000),
+            ),
+            100_000,
+        )
+        assertEquals(10_000L, r["a"])
+        assertEquals(30_000L, r["b"])
+    }
+
+    @Test
+    fun totalNeverExceedsTheWindow() {
+        val events = (0 until 50).map { ev("p${it % 5}", "C$it", resumed, it * 1_000L) }
+        val r = UsageAggregator.foregroundMs(events, 100_000)
+        assertTrue(r.values.sum() <= 100_000L)
+    }
+
+    @Test
+    fun screenOffClosesTheOpenApp() {
+        val r = UsageAggregator.foregroundMs(
+            listOf(ev("a", "A", resumed, 0), ev("", "", UsageAggregator.SCREEN_OFF, 20_000)),
+            1_000_000,
+        )
+        assertEquals(20_000L, r["a"])
+    }
+
+    @Test
+    fun aLatePauseOfAnEarlierAppIsIgnored() {
+        val r = UsageAggregator.foregroundMs(
+            listOf(
+                ev("a", "A", resumed, 0), ev("b", "B", resumed, 10_000),
+                ev("a", "A", paused, 12_000), ev("b", "B", paused, 30_000),
+            ),
+            100_000,
+        )
+        assertEquals(10_000L, r["a"])
+        assertEquals(20_000L, r["b"])
+    }
 }

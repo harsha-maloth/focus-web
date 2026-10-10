@@ -2,6 +2,13 @@
 
 Dates are 2026-10-10 for everything so far (the project began and reached Phase 3 the same day). Newest first.
 
+## Session 10: fix wildly wrong usage totals (written, not compiled)
+- **Bug (seen on the phone, 2026-10-10):** the screen showed 48 h 57 min for one day and 86 h on another, and WhatsApp 15 h in under 12 h of day. Cause: `UsageAggregator` paired resume and pause per activity, so any activity whose pause event was missing counted until the end of the day, and several of them stacked.
+- **Fix:** one app in front at a time. A resume closes the previous app; a pause closes only the current app; screen off, lock screen and shutdown close whatever is open. Totals can no longer exceed the window.
+- **Stored data:** Room 2 to 3 migration deletes `daily_usage` (the bad values would otherwise stay, because stored days are only replaced by larger values). History refills from the system log. Limits are kept.
+- Tests: 4 new aggregator cases (unclosed activities, window cap, screen off, late pause). Not run.
+- The same wrong numbers also fed the limits check, so limits could have blocked too early; fixed by the same change.
+
 ## Session 9: app limits (written, not compiled)
 - New `limits/` package: `LimitMath` (pure, tested), `BlockerService` (accessibility service: window-change events only, 30 s re-check, never blocks Focus or System UI), `BlockActivity` (full-screen "Time's up", Back and button go Home), `InstalledApps`, `AccessibilityStatus`.
 - Room version 2 with `Migration(1, 2)` adding `app_limit` (pkg, label, limitMs); `AppLimitDao`. Usage history is kept.

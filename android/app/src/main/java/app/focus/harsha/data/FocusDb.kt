@@ -51,13 +51,24 @@ abstract class DailyUsageDao {
     }
 }
 
-@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class], version = 2, exportSchema = false)
+@Database(entities = [DailyUsageEntity::class, AppLimitEntity::class], version = 3, exportSchema = false)
 abstract class FocusDb : RoomDatabase() {
     abstract fun usage(): DailyUsageDao
     abstract fun limits(): AppLimitDao
 
     companion object {
         @Volatile private var instance: FocusDb? = null
+
+        /**
+         * 2 to 3: the first usage maths overcounted (48 h in one day), and stored days are only ever
+         * replaced by larger values, so the bad rows would stay. Clear them; they refill from the
+         * system log with the corrected maths.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DELETE FROM `daily_usage`")
+            }
+        }
 
         /** 1 to 2: adds the app_limit table. Usage history is kept. */
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -69,7 +80,7 @@ abstract class FocusDb : RoomDatabase() {
         fun get(context: Context): FocusDb =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, FocusDb::class.java, "focus.db")
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }

@@ -279,3 +279,7 @@ Not verified: nothing compiled or run; the first CI run (also for Session 8 code
 Open items: (1) push, read CI, fix compile errors; (2) on the phone: usage access, allow restricted settings, enable accessibility, set a short limit and see the block; (3) edit-a-limit, warning before the limit, step 3 focus timer.
 Context block addition: Android has a Usage tab (7-day view, Room `daily_usage`) and a Limits tab (`app_limit`, accessibility `BlockerService`, `BlockActivity`). Never built.
 
+
+### Session 10: 2026-10-10
+Goal: the user's screenshots showed 48 h 57 min in one day. Found and fixed the overcount (D30); Room 3 clears stored usage. Not compiled or run. Open: push and read CI; recheck numbers against the phone's Digital Wellbeing.
+
